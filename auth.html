@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Authentication Required</title>
+        <link rel="stylesheet" href="css/nought.css" />
+        <link rel="stylesheet" href="css/auth.css" />
+        <script src="js/toast.js" defer></script>
+        <script src="js/auth.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <h2 class="auth-title">Authentication Required</h2>
+            <form class="auth-form" id="authenticationForm">
+                <p class="auth-description">
+                    Requesting access to:
+                    <input
+                        type="text"
+                        disabled
+                        readonly=""
+                        class="auth-target-url"
+                        id="authTargetUrl"
+                    />
+                </p>
+                <input
+                    type="password"
+                    id="authSecurityCode"
+                    class="auth-input"
+                    placeholder="Enter security code"
+                    required
+                />
+                <div class="auth-submit-container">
+                    <button type="submit" class="auth-submit-button">
+                        Verify
+                    </button>
+                </div>
+            </form>
+            <p id="passkeymsg"></p>
+        </div>
+    </body>
+</html>
