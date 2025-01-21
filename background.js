@@ -209,7 +209,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         sendResponse({
                             status: {
                                 code: "correct",
-                                msg: "This site is secured.",
                                 site: hostname,
                             },
                         });
@@ -217,14 +216,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         sendResponse({
                             status: {
                                 code: "error",
-                                msg: "This site is not secured.",
                                 site: hostname,
                             },
                         });
                     }
                 } catch (error) {
-                    console.error("Error parsing URL:", error);
-                    sendResponse({ status: { msg: "Invalid URL format." } });
+                    sendResponse({
+                        status: { msg: "Invalid URL format." },
+                    });
                 }
             });
         });

@@ -349,9 +349,6 @@ const initApp = async () => {
         try {
             const domains = await loadDomains();
 
-            // Set up header
-            domainsList.innerHTML = "<h3>Protected Sites:</h3>";
-
             // Create list container
             const ul = document.createElement("ul");
             ul.className = "site-list";
@@ -403,4 +400,66 @@ const initApp = async () => {
 // Start the application
 (async () => {
     await initApp();
+    // Theme management
+    const themeOptions = {
+        light: "light",
+        dark: "dark",
+        system: "system",
+    };
+
+    // Initialize system theme detection
+    const systemThemeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function getCurrentTheme() {
+        return localStorage.getItem("theme") || themeOptions.system;
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+    }
+
+    function setTheme(theme) {
+        localStorage.setItem("theme", theme);
+
+        if (theme === themeOptions.system) {
+            applyTheme(
+                systemThemeMedia.matches
+                    ? themeOptions.dark
+                    : themeOptions.light
+            );
+        } else {
+            applyTheme(theme);
+        }
+    }
+
+    // Get stored theme or default to system
+    const storedTheme = getCurrentTheme();
+
+    // Initialize theme
+    setTheme(storedTheme);
+
+    // Handle system theme changes
+    systemThemeMedia.addEventListener("change", (e) => {
+        if (getCurrentTheme() === themeOptions.system) {
+            applyTheme(e.matches ? themeOptions.dark : themeOptions.light);
+        }
+    });
+
+    // Set up button handlers
+    const buttons = document.querySelectorAll(".theme-option");
+    buttons.forEach((button) => {
+        // Set initial active state
+        if (button.dataset.theme === storedTheme) {
+            button.classList.add("active");
+        }
+
+        // Add click handler
+        button.addEventListener("click", () => {
+            setTheme(button.dataset.theme);
+
+            // Update active state
+            buttons.forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+        });
+    });
 })();
