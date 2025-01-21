@@ -69,7 +69,6 @@ chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: [1],
 });
 
-// Domain Management
 //----------------------------------------
 // Delete domain with password
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -90,7 +89,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     return;
                 }
 
-                if (message.data.password === domain.PIN) {
+                if (message.data.password === domain.password) {
                     const updatedDomains = domains.filter(
                         (item) => item.site !== message.data.site
                     );
@@ -152,29 +151,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-// PIN Management
-//----------------------------------------
+// Add domain with password
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "setPin") {
-        const { PIN, site } = message.data;
-        const PIN_DATA = { PIN, site };
+    if (message.type === "addDomain") {
+        (async () => {
+            try {
+                const result = await chrome.storage.sync.get("domains");
+                const domains = result.domains || [];
+                console.log(domains);
 
-        chrome.storage.sync.get(["domains"], function (result) {
-            const datalist = result.domains || [];
-            datalist.push(PIN_DATA);
+                const domain = domains.find(
+                    (item) => item.site === message.data.site
+                );
 
-            chrome.storage.sync.set({ domains: datalist }, function () {
-                if (chrome.runtime.lastError) {
+                if (domain) {
                     sendResponse({
-                        status: { code: "error", msg: "Error Securing site" },
+                        status: "fail",
+                        msg: "Site already Secured. Reload the page",
                     });
-                } else {
-                    sendResponse({
-                        status: { code: "correct", msg: "Site is Secured" },
-                    });
+                    return;
                 }
-            });
-        });
+
+                const updatedDomains = domains.concat(message.data);
+                await chrome.storage.sync.set({ domains: updatedDomains });
+                sendResponse({
+                    status: "success",
+                    msg: "Site successfully added!",
+                });
+            } catch (err) {
+                console.error("Error:", err);
+                sendResponse({
+                    status: "fail",
+                    msg: "An unexpected error occurred.",
+                });
+            }
+        })();
+
         return true;
     }
 });
@@ -205,7 +217,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         (item) => item.site === hostname
                     );
 
-                    if (domain?.PIN) {
+                    if (domain?.password) {
                         sendResponse({
                             status: {
                                 code: "correct",
@@ -241,7 +253,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 (item) => item.site === message.site
             );
 
-            if (message.code === domain.PIN) {
+            if (message.code === domain.password) {
                 addAuthenticatedSite(message.site);
                 chrome.tabs.update(tabId, { url: message.redirectUrl });
             } else {
@@ -274,7 +286,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(
                     (item) => item.site === site
                 );
 
-                if (domain?.PIN) {
+                if (domain?.password) {
                     const authUrl =
                         chrome.runtime.getURL("auth.html") +
                         "?redirect=" +

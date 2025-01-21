@@ -69,23 +69,22 @@
 
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
-                const PIN = document.getElementById("Password").value;
+                const password = document.getElementById("Password").value;
                 chrome.runtime.sendMessage(
                     {
-                        action: "setPin",
-                        data: { PIN: PIN, site: response.status.site },
+                        type: "addDomain",
+                        data: { password, site: response.status.site },
                     },
-                    function ({ status }) {
-                        if (status.code === "correct") {
+                    function (response) {
+                        if (response.status === "success") {
                             BoxContainer.removeChild(form);
                             BoxContainer.removeChild(requirementDiv);
-
                             statusBadge.textContent = "Secured";
                             statusBadge.classList.remove("insecure");
                             statusBadge.classList.add("secure");
-
                             chrome.tabs.reload();
-                        } else if (status.code === "error") {
+                        } else {
+                            requirementDiv.innerHTML = response.msg;
                         }
                     }
                 );

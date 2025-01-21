@@ -67,7 +67,7 @@ body {
     border-radius: 30px;
     display: inline-flex;
     gap: 4px;
-    border: 1px solid var(--switcher-bg);
+    border: 2px solid var(--switcher-bg);
 }
 
 .theme-option {
@@ -119,41 +119,17 @@ body {
     transform: scale(0.9);
 }
 
-
-/* Interior spacing */
-.passkey-container,
-.domains-container {
-    margin-bottom: 24px;
-}
-
-/* Last child no margin */
-.container>div:last-child {
-    margin-bottom: 0;
-}
-
 .passkey-container {
     border-radius: 12px;
     padding: 24px;
-    margin: 16px 0;
+    margin: 12px 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
-}
-
-.passkey-container:hover,
-.domains-container:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 [data-theme="dark"] .domains-container,
 [data-theme="dark"] .passkey-container {
     box-shadow: color(srgb 0 0 0 / 0.3) 0px 1px 2px 0px, color(srgb 0 0 0 / 0.15) 0px 2px 6px 2px
-}
-
-
-[data-theme="dark"] .domains-container:hover,
-[data-theme="dark"] .passkey-container:hover {
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px,
-        rgba(0, 0, 0, 0.22) 0px 10px 10px;
 }
 
 .toggle-container {
@@ -200,7 +176,6 @@ body {
     cursor: pointer;
 }
 
-
 .passkey-container h4 {
     color: #424242;
     font-size: 1.1rem;
@@ -225,6 +200,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    transition: transform 0.2s ease;
 }
 
 #create-passkey:hover {
@@ -289,17 +265,61 @@ body {
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    margin: 16px 0;
 }
 
-.domains-container h3 {
-    color: #1976d2;
-    font-size: 1.25rem;
-    font-weight: 500;
-    margin: 0 0 20px 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+.domains-container .newButtonContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 0 8px;
+    height: 48px;
 }
+
+.domains-container .newButtonContainer button {
+    background: #ffffff;
+    color: var(--text-primary);
+    border: none;
+    border-radius: 1rem;
+    padding: 12px 24px 12px 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: -webkit-inline-box;
+    display: -webkit-inline-flex;
+    display: -moz-inline-box;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+    -webkit-transition: box-shadow .08s linear;
+    transition: box-shadow .08s linear;
+}
+
+.domains-container .newButtonContainer button:hover {
+    background: #f8f9fa;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 2px 6px 2px rgba(60, 64, 67, .15);
+}
+
+.domains-container .newButtonContainer button:active {
+    transform: translateY(1px);
+}
+
+[data-theme="dark"] .domains-container .newButtonContainer button {
+    background: #37393b;
+    color: #ffffff;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 1px 3px 1px rgba(0, 0, 0, .15);
+}
+
+[data-theme="dark"] .domains-container .newButtonContainer button:hover {
+    background: #242a31;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 2px 6px 2px rgba(0, 0, 0, .15);
+}
+
 
 .site-list {
     list-style: none;
@@ -308,14 +328,27 @@ body {
 }
 
 .site-item {
+    height: 56px !important;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-pack: justify;
+    -moz-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -ms-flex-pack: justify;
     justify-content: space-between;
+    -webkit-box-align: center;
+    -moz-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
     align-items: center;
-    padding: 12px 16px;
+    padding: 0px 16px;
     background: #ffffff;
     border-radius: 8px;
     margin-bottom: 8px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-theme="dark"] .site-item {
@@ -329,7 +362,7 @@ body {
 
 .site-item:hover {
     background-color: #f8f9fa;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.075);
 }
 
 
@@ -338,7 +371,7 @@ body {
 }
 
 
-.site-item span {
+.site-item a {
     color: var(--text-primary);
     font-size: 0.95rem;
     font-weight: 400;
@@ -352,14 +385,13 @@ body {
     color: #dc3545;
     border: 1px solid #dc3545;
     border-radius: 6px;
-    padding: 6px 16px;
-    font-size: 0.875rem;
-    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    min-width: 80px;
+    height: 40px !important;
+    width: 40px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .delete-btn:hover {
@@ -370,6 +402,12 @@ body {
 
 .delete-btn:active {
     transform: translateY(1px);
+}
+
+
+.delete-btn>svg {
+    color: currentColor !important;
+    fill: currentColor !important;
 }
 
 /* Animation for list items */
@@ -453,6 +491,7 @@ body {
     border: none;
     border-radius: 4px;
     background: var(--bg-primary);
+    color: var(--text-primary);
     font-size: 16px;
     box-sizing: border-box;
     transition: background 0.2s;
@@ -529,4 +568,8 @@ body {
 
 .button-passkey:hover {
     background: var(--md-success-hover);
+}
+
+.loading-text:empty {
+    display: none;
 }
