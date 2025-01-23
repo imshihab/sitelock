@@ -253,11 +253,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 (item) => item.site === message.site
             );
 
+            if (!domain) {
+                chrome.tabs.update(tabId, { url: message.redirectUrl });
+                return;
+            }
+
             if (message.code === domain.password) {
                 addAuthenticatedSite(message.site);
                 chrome.tabs.update(tabId, { url: message.redirectUrl });
             } else {
-                sendResponse({ fail: true, msg: "Password does not match." });
+                sendResponse({
+                    fail: true,
+                    msg: "Password does not match.",
+                });
             }
         });
         return true;
