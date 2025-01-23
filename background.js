@@ -41,12 +41,71 @@ chrome.runtime.onInstalled.addListener(() => {
     // Create initial tab
     chrome.tabs.create({ url: chrome.runtime.getURL("index.html") });
 
+    // First-time installation logic
+    chrome.storage.sync.set({ isFirstInstall: true });
+
     // Setup context menu
     chrome.contextMenus.create({
         id: "preferences",
         title: "Preferences",
         contexts: ["all"],
     });
+});
+
+// Listen for messages from index.html to confirm first-time status
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "checkFirstInstall") {
+        (async () => {
+            try {
+                const result = await chrome.storage.sync.get([
+                    "isFirstInstall",
+                    "goatPIN",
+                ]);
+
+                if (result.isFirstInstall && result.goatPIN === undefined) {
+                    sendResponse({
+                        isFirstInstall: true,
+                    });
+                } else {
+                    sendResponse({
+                        isFirstInstall: false,
+                    });
+                }
+            } catch (error) {
+                sendResponse({
+                    error: error,
+                });
+                console.error("Error:", error);
+            }
+        })();
+        return true; // Indicates we wish to send a response asynchronously
+    }
+});
+
+// Create PIN
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "createPin") {
+        chrome.storage.sync.get(["goatPIN"], (result) => {
+            if (result.goatPIN) {
+                sendResponse({
+                    status: "fail",
+                    msg: "PIN already exists. Reload the page",
+                });
+                return;
+            }
+
+            chrome.storage.sync.set(
+                { isFirstInstall: false, goatPIN: message.pin },
+                () => {
+                    sendResponse({
+                        status: "success",
+                        msg: "PIN successfully created!",
+                    });
+                }
+            );
+        });
+        return true;
+    }
 });
 
 // URL Redirection Rules
@@ -105,7 +164,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     });
                 }
             } catch (err) {
-                console.error("Error:", err);
                 sendResponse({
                     status: "fail",
                     msg: "An unexpected error occurred.",
@@ -158,7 +216,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             try {
                 const result = await chrome.storage.sync.get("domains");
                 const domains = result.domains || [];
-                console.log(domains);
 
                 const domain = domains.find(
                     (item) => item.site === message.data.site
@@ -179,7 +236,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     msg: "Site successfully added!",
                 });
             } catch (err) {
-                console.error("Error:", err);
                 sendResponse({
                     status: "fail",
                     msg: "An unexpected error occurred.",

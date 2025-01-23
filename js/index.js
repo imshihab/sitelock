@@ -1,6 +1,7 @@
 // Constants
 const STORAGE_KEY = "passkey_credentials";
 const AUTO_LOGIN_KEY = "passkey_auto_login";
+const FIRST_ATTEMPT = "FIRST_ATTEMPT";
 
 // Utility functions
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -34,6 +35,12 @@ const createDomainsList = () => {
 const createPasskeyContainer = () => {
     const container = document.createElement("div");
     container.className = "passkey-container";
+    return container;
+};
+
+const createPinContainer = () => {
+    const container = document.createElement("div");
+    container.className = "pin-container";
     return container;
 };
 
@@ -179,8 +186,6 @@ const registerCredential = async () => {
 };
 
 async function checkUrl(url) {
-    console.log(url);
-
     try {
         // Try to create URL object - this validates basic URL format
         const parsedUrl = new URL(url);
@@ -407,6 +412,31 @@ const setupPasskeyRegistration = async (container, redirectUrl) => {
     container.appendChild(regButton);
 
     regButton.addEventListener("click", async () => {
+        // TODO Fix
+
+        const Check_FIRST_ATTEMPT = localStorage.getItem(FIRST_ATTEMPT);
+        console.log(Check_FIRST_ATTEMPT);
+
+        if (Check_FIRST_ATTEMPT !== "false") {
+            chrome.runtime.sendMessage(
+                { action: "checkFirstInstall" },
+                (response) => {
+                    if (response.error) {
+                        toast(response.error, "error");
+                        return;
+                    }
+
+                    const isFirstInstall = response.isFirstInstall;
+                    if (isFirstInstall) {
+                        toast(
+                            "Please set a PIN first before enabling passkey protection.",
+                            "error"
+                        );
+                    }
+                }
+            );
+            return;
+        }
         try {
             await registerCredential();
             toast("Passkey Successfully Created");
@@ -429,17 +459,177 @@ const initApp = async () => {
 
     try {
         // todo: fix this.
-        const isSupported = await isPasskeySupported();
-        if (!isSupported) {
-            showMessage("This device does not support passkeys.");
-            return;
-        }
+        // const isSupported = await isPasskeySupported();
+        // if (!isSupported) {
+        //     showMessage("This device does not support passkeys.");
+        //     return;
+        // }
 
         const passkeyContainer = createPasskeyContainer();
         const domainsList = createDomainsList();
 
-        container.appendChild(passkeyContainer);
-        container.appendChild(domainsList);
+        const Check_FIRST_ATTEMPT = localStorage.getItem(FIRST_ATTEMPT);
+
+        if (Check_FIRST_ATTEMPT !== "false") {
+            chrome.runtime.sendMessage(
+                { action: "checkFirstInstall" },
+                (response) => {
+                    if (response.error) {
+                        toast(response.error, "error");
+                        return;
+                    }
+
+                    const isFirstInstall = response.isFirstInstall;
+                    if (isFirstInstall) {
+                        const pinContainer = createPinContainer();
+                        pinContainer.innerHTML = `
+                        <p>Set a PIN to securely authenticate yourself, even if you forget other passwords. This PIN will also be needed before adding new passkeys.</p>
+                        <form id="createPinForm">
+                            <h4 class="pintitle">Create a PIN</h4>
+                            <div class="pin-input-container">
+                                <div class="pin-inputs">
+                                    <input type="text"
+                                        maxlength="1"
+                                        pattern="[0-9]" 
+                                        class="pin-box" 
+                                        inputmode="numeric" 
+                                        required>
+                                    <input type="text"
+                                        maxlength="1" 
+                                        pattern="[0-9]" 
+                                        class="pin-box" 
+                                        inputmode="numeric" 
+                                        required>
+                                    <input type="text"
+                                        maxlength="1" 
+                                        pattern="[0-9]" 
+                                        class="pin-box" 
+                                        inputmode="numeric" 
+                                        required>
+                                    <input type="text" 
+                                        maxlength="1" 
+                                        pattern="[0-9]" 
+                                        class="pin-box" 
+                                        inputmode="numeric" 
+                                        required>
+                                </div>
+                            </div>
+                            <div class="button-container">
+                                <button type="submit" id="createPinBtn" class="button button-submit">Next</button>
+                            </div>
+                        </form>`;
+
+                        container.appendChild(pinContainer);
+                        let firstPin = "";
+
+                        const pinBoxes = document.querySelectorAll(".pin-box");
+                        const title = pinContainer.querySelector("h4");
+                        const createPinBtn =
+                            document.getElementById("createPinBtn");
+
+                        pinBoxes.forEach((box, index) => {
+                            box.addEventListener("input", (e) => {
+                                // Only allow digits
+                                e.target.value = e.target.value.replace(
+                                    /[^0-9]/g,
+                                    ""
+                                );
+
+                                // Auto move to next input
+                                if (
+                                    e.target.value.length === 1 &&
+                                    index < pinBoxes.length - 1
+                                ) {
+                                    pinBoxes[index + 1].focus();
+                                }
+                            });
+
+                            // Allow backspace to move back
+                            box.addEventListener("keydown", (e) => {
+                                if (
+                                    e.key === "Backspace" &&
+                                    e.target.value === "" &&
+                                    index > 0
+                                ) {
+                                    pinBoxes[index - 1].focus();
+                                }
+                            });
+                        });
+
+                        const createPinForm =
+                            pinContainer.querySelector("#createPinForm");
+                        createPinForm.addEventListener(
+                            "submit",
+                            async (event) => {
+                                event.preventDefault();
+
+                                const pin = Array.from(pinBoxes)
+                                    .map((box) => box.value)
+                                    .join("");
+
+                                if (pin.length < 4) {
+                                    toast(
+                                        "PIN must be exactly 4 digits.",
+                                        "error"
+                                    );
+                                    return;
+                                }
+
+                                if (!/^\d{4}$/.test(pin)) {
+                                    toast(
+                                        "PIN must be exactly 4 digits.",
+                                        "error"
+                                    );
+                                    return;
+                                }
+
+                                if (firstPin && firstPin !== pin) {
+                                    toast("PINs do not match", "error");
+                                    return;
+                                }
+
+                                if (!firstPin) {
+                                    firstPin = pin;
+                                    title.textContent = "Confirm PIN";
+                                    createPinBtn.textContent = "Confirm";
+                                    Array.from(pinBoxes).forEach(
+                                        (box) => (box.value = "")
+                                    );
+                                    pinBoxes[0].focus();
+                                    return;
+                                }
+
+                                chrome.runtime.sendMessage(
+                                    { action: "createPin", pin: pin },
+                                    (response) => {
+                                        if (response.status === "success") {
+                                            toast("PIN successfully created.");
+                                            pinContainer.remove();
+
+                                            localStorage.setItem(
+                                                FIRST_ATTEMPT,
+                                                "false"
+                                            );
+                                        } else {
+                                            toast(response.msg, "error");
+                                        }
+                                    }
+                                );
+                            }
+                        );
+                    } else {
+                        localStorage.setItem(FIRST_ATTEMPT, "false");
+                    }
+                }
+            );
+            setTimeout(() => {
+                container.appendChild(passkeyContainer);
+                container.appendChild(domainsList);
+            }, 100);
+        } else {
+            container.appendChild(passkeyContainer);
+            container.appendChild(domainsList);
+        }
 
         const credentials = getCredentials();
 
