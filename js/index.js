@@ -214,6 +214,7 @@ const addDomain = async (site) => {
     return new Promise((resolve, reject) => {
         const authForm = overlay.querySelector("#NewAuthForm");
         const cancelBtn = overlay.querySelector("#newCancelBtn");
+        document.getElementById("NewSite").focus();
 
         authForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -278,6 +279,8 @@ const deleteDomain = async (site) => {
         const authForm = overlay.querySelector("#authForm");
         const cancelBtn = overlay.querySelector("#cancelBtn");
         const passkeyBtn = overlay.querySelector("#passkeyBtn");
+        const passwordBtn = overlay.querySelector("#password");
+        passwordBtn.focus();
 
         const handleDeleteResponse = (response) => {
             if (response.status === "success") {
@@ -425,6 +428,7 @@ const initApp = async () => {
     const redirectUrl = urlParams.get("redirect");
 
     try {
+        // todo: fix this.
         const isSupported = await isPasskeySupported();
         if (!isSupported) {
             showMessage("This device does not support passkeys.");
