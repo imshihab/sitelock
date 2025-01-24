@@ -58,10 +58,12 @@ const createNewDialog = () => {
             <div class="input-container">
                 <input type="text" class="input-field" id="NewSite" required placeholder=" ">
                 <label for="NewSite" class="input-label">Domain:</label>
+                <div class="active-indicator"></div>
             </div>
             <div class="input-container">
                 <input type="password" class="input-field" id="NewPassword" required placeholder=" ">
                 <label for="NewPassword" class="input-label">Password:</label>
+                <div class="active-indicator"></div>
             </div>
             <div class="button-container">
                 <button type="button" id="newCancelBtn" class="button button-cancel">Cancel</button>
@@ -88,6 +90,7 @@ const createDeleteDialog = () => {
             <div class="input-container">
                 <input type="password" class="input-field" id="password" required placeholder=" ">
                 <label for="password" class="input-label">Password:</label>
+                <div class="active-indicator"></div>
             </div>
             <div class="button-container">
                 <button type="button" id="cancelBtn" class="button button-cancel">Cancel</button>
@@ -619,19 +622,6 @@ const setupPasskeyRegistration = async (container, redirectUrl) => {
             );
         });
         return;
-
-        try {
-            await registerCredential();
-            toast("Passkey Successfully Created");
-            showMessage("Passkey Authentication Enabled", container);
-            if (redirectUrl) {
-                window.location.href = redirectUrl;
-            } else {
-                window.location.reload();
-            }
-        } catch (error) {
-            toast(`Error during passkey creation: ${error.message}`, "error");
-        }
     });
 };
 
@@ -668,7 +658,7 @@ const initApp = async () => {
                         pinContainer.innerHTML = `
                         <p>Set a PIN to securely authenticate yourself, even if you forget other passwords. This PIN will also be needed before adding new passkeys.</p>
                         <form id="createPinForm">
-                            <h4 class="pintitle">Create a PIN</h4>
+                            <h4 class="pintitle">Set a PIN</h4>
                             <div class="pin-input-container">
                                 <div class="pin-inputs">
                                     <input type="text"
@@ -698,6 +688,7 @@ const initApp = async () => {
                                 </div>
                             </div>
                             <div class="button-container">
+                                <button type="button" id="PINclearBtn" class="button button-cancel button-clear">Clear</button>
                                 <button type="submit" id="createPinBtn" class="button button-submit">Next</button>
                             </div>
                         </form>`;
@@ -709,6 +700,14 @@ const initApp = async () => {
                         const title = pinContainer.querySelector("h4");
                         const createPinBtn =
                             document.getElementById("createPinBtn");
+
+                        const clearBtn = document.getElementById("PINclearBtn");
+                        clearBtn.addEventListener("click", () => {
+                            Array.from(pinBoxes).forEach(
+                                (box) => (box.value = "")
+                            );
+                            pinBoxes[0].focus();
+                        });
 
                         pinBoxes.forEach((box, index) => {
                             box.addEventListener("input", (e) => {
@@ -725,6 +724,15 @@ const initApp = async () => {
                                 ) {
                                     pinBoxes[index + 1].focus();
                                 }
+
+                                if (
+                                    e.target.value.length === 1 &&
+                                    index === pinBoxes.length - 1
+                                ) {
+                                    createPinBtn.classList.add("active");
+                                } else {
+                                    createPinBtn.classList.remove("active");
+                                }
                             });
 
                             // Allow backspace to move back
@@ -735,6 +743,15 @@ const initApp = async () => {
                                     index > 0
                                 ) {
                                     pinBoxes[index - 1].focus();
+                                }
+
+                                if (
+                                    e.target.value.length === 1 &&
+                                    index === pinBoxes.length - 1
+                                ) {
+                                    createPinBtn.classList.add("active");
+                                } else {
+                                    createPinBtn.classList.remove("active");
                                 }
                             });
                         });
@@ -773,8 +790,9 @@ const initApp = async () => {
 
                                 if (!firstPin) {
                                     firstPin = pin;
-                                    title.textContent = "Confirm PIN";
+                                    title.textContent = "Re-enter your PIN";
                                     createPinBtn.textContent = "Confirm";
+                                    createPinBtn.classList.remove("active");
                                     Array.from(pinBoxes).forEach(
                                         (box) => (box.value = "")
                                     );
