@@ -105,6 +105,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             );
         });
         return true;
+    } else if (message.action === "checkPin") {
+        chrome.storage.sync.get(["goatPIN", "passkeyEnabled"], (result) => {
+            if (result.passkeyEnabled) {
+                sendResponse({
+                    status: "fail",
+                    msg: "Passkey is enabled. Reload the page",
+                });
+                return;
+            }
+
+            if (result.goatPIN === message.pin) {
+                sendResponse({
+                    status: "success",
+                    msg: "PIN successfully verified!",
+                });
+            } else {
+                sendResponse({
+                    status: "fail",
+                    msg: "PIN does not match.",
+                });
+            }
+        });
+        return true;
+    }
+});
+
+// passkeyEnabled
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "passkeyEnabled") {
+        chrome.storage.sync.set({ passkeyEnabled: true }, () => {
+            sendResponse({
+                status: "success",
+                msg: "Passkey is enabled!",
+            });
+        });
+        return true;
     }
 });
 

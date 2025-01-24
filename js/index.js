@@ -107,6 +107,56 @@ const createDeleteDialog = () => {
     return overlay;
 };
 
+// PIN dialog to ask user for PIN verification to enable passkey.
+const createPinDialog = () => {
+    const overlay = document.createElement("div");
+    overlay.classList.add("overlay-container");
+
+    const dialog = document.createElement("div");
+    dialog.classList.add("dialog-container");
+
+    dialog.innerHTML = `
+        <h3 class="auth-title">Authentication Required</h3>
+        <form id="pinForm">
+            <div class="pin-input-container">
+                <div class="pin-inputs">
+                    <input type="text"
+                        maxlength="1"
+                        pattern="[0-9]" 
+                        class="pin-box" 
+                        inputmode="numeric" 
+                        required>
+                    <input type="text"
+                        maxlength="1" 
+                        pattern="[0-9]" 
+                        class="pin-box" 
+                        inputmode="numeric" 
+                        required>
+                    <input type="text"
+                        maxlength="1" 
+                        pattern="[0-9]" 
+                        class="pin-box" 
+                        inputmode="numeric" 
+                        required>
+                    <input type="text" 
+                        maxlength="1" 
+                        pattern="[0-9]" 
+                        class="pin-box" 
+                        inputmode="numeric" 
+                        required>
+                </div>
+            </div>
+            <div class="button-container">
+                <button type="button" id="PINcancelBtn" class="button button-cancel">Cancel</button>
+                <button type="submit" class="button button-submit">Submit</button>
+            </div>
+        </form>
+    `;
+
+    overlay.appendChild(dialog);
+    return overlay;
+};
+
 // Passkey functions
 const isPasskeySupported = async () => {
     if (
@@ -449,11 +499,7 @@ const setupPasskeyRegistration = async (container, redirectUrl) => {
     container.appendChild(regButton);
 
     regButton.addEventListener("click", async () => {
-        // TODO Fix
-
         const Check_FIRST_ATTEMPT = localStorage.getItem(FIRST_ATTEMPT);
-        console.log(Check_FIRST_ATTEMPT);
-
         if (Check_FIRST_ATTEMPT !== "false") {
             chrome.runtime.sendMessage(
                 { action: "checkFirstInstall" },
@@ -474,6 +520,106 @@ const setupPasskeyRegistration = async (container, redirectUrl) => {
             );
             return;
         }
+
+        const overlay = createPinDialog();
+        document.body.appendChild(overlay);
+
+        const cancelBtn = overlay.querySelector("#PINcancelBtn");
+        cancelBtn.addEventListener("click", () => {
+            overlay.remove();
+            toast("Cancelled by user", "error");
+        });
+
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+                toast("Cancelled by user", "error");
+            }
+        });
+
+        const pinBoxes = document.querySelectorAll(".pin-box");
+        pinBoxes[0].focus();
+
+        pinBoxes.forEach((box, index) => {
+            box.addEventListener("input", (e) => {
+                // Only allow digits
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+
+                // Auto move to next input
+                if (
+                    e.target.value.length === 1 &&
+                    index < pinBoxes.length - 1
+                ) {
+                    pinBoxes[index + 1].focus();
+                }
+            });
+
+            // Allow backspace to move back
+            box.addEventListener("keydown", (e) => {
+                if (
+                    e.key === "Backspace" &&
+                    e.target.value === "" &&
+                    index > 0
+                ) {
+                    pinBoxes[index - 1].focus();
+                }
+            });
+        });
+
+        const PinForm = overlay.querySelector("#pinForm");
+        PinForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const pin = Array.from(pinBoxes)
+                .map((box) => box.value)
+                .join("");
+
+            toast("Checking PIN...");
+            chrome.runtime.sendMessage(
+                { action: "checkPin", pin: pin },
+                (response) => {
+                    if (response.status === "success") {
+                        toast("PIN successfully verified.");
+                        overlay.remove();
+
+                        registerCredential()
+                            .then(() => {
+                                toast("Passkey Successfully Created");
+                                showMessage(
+                                    "Passkey Authentication Enabled",
+                                    container
+                                );
+                                chrome.runtime.sendMessage(
+                                    { action: "passkeyEnabled" },
+                                    (response) => {
+                                        if (response.error) {
+                                            console.error(
+                                                "Error notifying background about passkey:",
+                                                response.error
+                                            );
+                                        }
+                                        if (redirectUrl) {
+                                            window.location.href = redirectUrl;
+                                        } else {
+                                            window.location.reload();
+                                        }
+                                    }
+                                );
+                            })
+                            .catch((error) => {
+                                toast(
+                                    `Error during passkey creation: ${error.message}`,
+                                    "error"
+                                );
+                            });
+                    } else {
+                        toast(response.msg, "error");
+                    }
+                }
+            );
+        });
+        return;
+
         try {
             await registerCredential();
             toast("Passkey Successfully Created");
