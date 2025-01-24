@@ -42,17 +42,23 @@ body {
 .container {
     max-width: 80vw;
     min-width: 80vw;
-    /* max-height: 96vh; */
     margin: calc(2vh) auto;
     padding: 24px;
     border-radius: 16px;
-    /* box-shadow: color(srgb 0 0 0 / 0.3) 0px 1px 2px 0px, color(srgb 0 0 0 / 0.15) 0px 2px 6px 2px; */
     -ms-overflow-style: auto;
     overflow-y: hidden;
     overflow-y: auto;
     overscroll-behavior-y: none;
     display: flex;
     flex-direction: column;
+    transition: max-width 0.2s ease, min-width 0.2s ease;
+}
+
+@media screen and (max-width: 460px) {
+    .container {
+        max-width: 96vw;
+        min-width: 96vw;
+    }
 }
 
 

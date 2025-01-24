@@ -29,6 +29,7 @@ const saveCredential = (credentialData) => {
 const createDomainsList = () => {
     const list = document.createElement("div");
     list.classList.add("domains-container");
+    list.id = "domainsList";
     return list;
 };
 
@@ -211,8 +212,41 @@ async function checkUrl(url) {
     }
 }
 
+const SiteItemUI = (site) => {
+    // Create list item
+    const li = document.createElement("li");
+    li.className = "site-item";
+
+    // Create site text
+    const siteAnchor = document.createElement("a");
+    siteAnchor.textContent = site;
+    siteAnchor.setAttribute("href", site);
+    siteAnchor.setAttribute("target", "_blank");
+
+    // Create delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>`;
+    deleteBtn.className = "delete-btn";
+
+    // Add delete functionality
+    deleteBtn.addEventListener("click", async () => {
+        try {
+            await deleteDomain(site);
+            li.remove();
+            toast("Site successfully deleted");
+        } catch (error) {
+            toast(error.message, "error");
+        }
+    });
+
+    // Assemble the list item
+    li.appendChild(siteAnchor);
+    li.appendChild(deleteBtn);
+    return li;
+};
+
 // Domain management functions
-const addDomain = async (site) => {
+const addDomain = async () => {
     const overlay = createNewDialog();
     document.body.appendChild(overlay);
 
@@ -250,6 +284,9 @@ const addDomain = async (site) => {
                     (response) => {
                         if (response.status === "success") {
                             overlay.remove();
+                            document
+                                .querySelector("#domainsList ul")
+                                .appendChild(SiteItemUI(message));
                             resolve(response);
                         } else {
                             overlay.remove();
@@ -667,7 +704,6 @@ const initApp = async () => {
         // Load and display domains
         try {
             const domains = await loadDomains();
-            // add newButton inside a new div and put that div inside the domainsList
             const newButtonContainer = document.createElement("div");
             newButtonContainer.className = "newButtonContainer";
             domainsList.appendChild(newButtonContainer);
@@ -683,7 +719,9 @@ const initApp = async () => {
                 try {
                     await addDomain();
                     toast("Site successfully added");
-                    window.location.reload();
+                    if (!chrome?.runtime?.id) {
+                        window.location.reload();
+                    }
                 } catch (error) {
                     toast(error.message, "error");
                 }
@@ -698,37 +736,10 @@ const initApp = async () => {
             if (domains.length === 0) {
                 return;
             }
+
             // Render each domain
             domains.forEach((site) => {
-                // Create list item
-                const li = document.createElement("li");
-                li.className = "site-item";
-
-                // Create site text
-                const siteAnchor = document.createElement("a");
-                siteAnchor.textContent = site;
-                siteAnchor.setAttribute("href", site);
-                siteAnchor.setAttribute("target", "_blank");
-
-                // Create delete button
-                const deleteBtn = document.createElement("button");
-                deleteBtn.innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>`;
-                deleteBtn.className = "delete-btn";
-
-                // Add delete functionality
-                deleteBtn.addEventListener("click", async () => {
-                    try {
-                        await deleteDomain(site);
-                        li.remove();
-                        toast("Site successfully deleted");
-                    } catch (error) {
-                        toast(error.message, "error");
-                    }
-                });
-
-                // Assemble the list item
-                li.appendChild(siteAnchor);
-                li.appendChild(deleteBtn);
+                const li = SiteItemUI(site);
                 ul.appendChild(li);
             });
         } catch (error) {
