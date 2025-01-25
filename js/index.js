@@ -56,18 +56,20 @@ const createNewDialog = () => {
         <h3 class="auth-title">Add New Domain</h3>
         <form id="NewAuthForm">
             <div class="input-container">
-                <input type="text" class="input-field" id="NewSite" required placeholder=" ">
+                <input type="text" class="input-field urlIcon" id="NewSite" autocomplete="off" required placeholder=" ">
                 <label for="NewSite" class="input-label">Domain:</label>
+                <div class="active-indicator"></div>
             </div>
+            <p class="supporting-text"></p>
             <div class="input-container">
-                <input type="password" class="input-field" id="NewPassword" required placeholder=" ">
+                <input type="password" class="input-field passIcon" id="NewPassword" required placeholder=" ">
                 <label for="NewPassword" class="input-label">Password:</label>
+                <div class="active-indicator"></div>
             </div>
             <div class="button-container">
                 <button type="button" id="newCancelBtn" class="button button-cancel">Cancel</button>
                 <button type="submit" class="button button-submit">Submit</button>
             </div>
-            <p class="loading-text"></p>
         </form>
     `;
 
@@ -86,8 +88,9 @@ const createDeleteDialog = () => {
         <h3 class="auth-title">Authentication Required</h3>
         <form id="authForm">
             <div class="input-container">
-                <input type="password" class="input-field" id="password" required placeholder=" ">
+                <input type="password" class="input-field passIcon" id="password" required placeholder=" ">
                 <label for="password" class="input-label">Password:</label>
+                <div class="active-indicator"></div>
             </div>
             <div class="button-container">
                 <button type="button" id="cancelBtn" class="button button-cancel">Cancel</button>
@@ -314,16 +317,16 @@ const addDomain = async () => {
                     toast("Password must be at least 4 characters.", "error");
                     return;
                 }
-                document.querySelector(".loading-text").textContent =
+                document.querySelector(".supporting-text").textContent =
                     "Checking site...";
                 const { valid, message } = await checkUrl(site);
 
                 if (valid === false) {
                     toast(message, "error");
-                    document.querySelector(".loading-text").textContent = "";
+                    document.querySelector(".supporting-text").textContent = "";
                     return;
                 }
-                document.querySelector(".loading-text").textContent =
+                document.querySelector(".supporting-text").textContent =
                     "Valid site";
 
                 chrome.runtime.sendMessage(
@@ -619,19 +622,6 @@ const setupPasskeyRegistration = async (container, redirectUrl) => {
             );
         });
         return;
-
-        try {
-            await registerCredential();
-            toast("Passkey Successfully Created");
-            showMessage("Passkey Authentication Enabled", container);
-            if (redirectUrl) {
-                window.location.href = redirectUrl;
-            } else {
-                window.location.reload();
-            }
-        } catch (error) {
-            toast(`Error during passkey creation: ${error.message}`, "error");
-        }
     });
 };
 
@@ -641,13 +631,6 @@ const initApp = async () => {
     const redirectUrl = urlParams.get("redirect");
 
     try {
-        // todo: fix this.
-        // const isSupported = await isPasskeySupported();
-        // if (!isSupported) {
-        //     showMessage("This device does not support passkeys.");
-        //     return;
-        // }
-
         const passkeyContainer = createPasskeyContainer();
         const domainsList = createDomainsList();
 
@@ -668,7 +651,7 @@ const initApp = async () => {
                         pinContainer.innerHTML = `
                         <p>Set a PIN to securely authenticate yourself, even if you forget other passwords. This PIN will also be needed before adding new passkeys.</p>
                         <form id="createPinForm">
-                            <h4 class="pintitle">Create a PIN</h4>
+                            <h4 class="pintitle">Set a PIN</h4>
                             <div class="pin-input-container">
                                 <div class="pin-inputs">
                                     <input type="text"
@@ -698,6 +681,7 @@ const initApp = async () => {
                                 </div>
                             </div>
                             <div class="button-container">
+                                <button type="button" id="PINclearBtn" class="button button-cancel button-clear">Clear</button>
                                 <button type="submit" id="createPinBtn" class="button button-submit">Next</button>
                             </div>
                         </form>`;
@@ -709,6 +693,14 @@ const initApp = async () => {
                         const title = pinContainer.querySelector("h4");
                         const createPinBtn =
                             document.getElementById("createPinBtn");
+
+                        const clearBtn = document.getElementById("PINclearBtn");
+                        clearBtn.addEventListener("click", () => {
+                            Array.from(pinBoxes).forEach(
+                                (box) => (box.value = "")
+                            );
+                            pinBoxes[0].focus();
+                        });
 
                         pinBoxes.forEach((box, index) => {
                             box.addEventListener("input", (e) => {
@@ -773,7 +765,7 @@ const initApp = async () => {
 
                                 if (!firstPin) {
                                     firstPin = pin;
-                                    title.textContent = "Confirm PIN";
+                                    title.textContent = "Re-enter your PIN";
                                     createPinBtn.textContent = "Confirm";
                                     Array.from(pinBoxes).forEach(
                                         (box) => (box.value = "")
@@ -814,37 +806,38 @@ const initApp = async () => {
             container.appendChild(domainsList);
         }
 
-        const credentials = getCredentials();
-
-        if (credentials.length === 0) {
-            await setupPasskeyRegistration(passkeyContainer, redirectUrl);
-        } else {
-            if (redirectUrl) {
-                window.location.href = redirectUrl;
-                return;
+        const isSupported = await isPasskeySupported();
+        if (isSupported) {
+            const credentials = getCredentials();
+            if (credentials.length === 0) {
+                await setupPasskeyRegistration(passkeyContainer, redirectUrl);
+            } else {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                    return;
+                }
+                const isAutoLogin =
+                    localStorage.getItem("passkeyAutoLogin") === "true";
+                showMessage(updatePasskeyStatus(isAutoLogin), passkeyContainer);
+                // Add auto-login toggle
+                const { toggleContainer, toggle } = createToggleSwitch(
+                    "autoLoginToggle",
+                    "Enable automatic passkey login"
+                );
+                // Set initial state from localStorage
+                toggle.checked = isAutoLogin;
+                // Add change event listener
+                toggle.addEventListener("change", (e) => {
+                    localStorage.setItem("passkeyAutoLogin", e.target.checked);
+                    updatePasskeyStatus(e.target.checked, false);
+                });
+                passkeyContainer.appendChild(toggleContainer);
             }
-
-            const isAutoLogin =
-                localStorage.getItem("passkeyAutoLogin") === "true";
-
-            showMessage(updatePasskeyStatus(isAutoLogin), passkeyContainer);
-
-            // Add auto-login toggle
-            const { toggleContainer, toggle } = createToggleSwitch(
-                "autoLoginToggle",
-                "Enable automatic passkey login"
+        } else {
+            showMessage(
+                "This device does not support passkeys.",
+                passkeyContainer
             );
-
-            // Set initial state from localStorage
-            toggle.checked = isAutoLogin;
-
-            // Add change event listener
-            toggle.addEventListener("change", (e) => {
-                localStorage.setItem("passkeyAutoLogin", e.target.checked);
-                updatePasskeyStatus(e.target.checked, false);
-            });
-
-            passkeyContainer.appendChild(toggleContainer);
         }
 
         // Load and display domains
