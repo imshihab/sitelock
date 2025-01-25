@@ -717,6 +717,15 @@ const initApp = async () => {
                                 ) {
                                     pinBoxes[index + 1].focus();
                                 }
+
+                                if (
+                                    e.target.value.length === 1 &&
+                                    index === pinBoxes.length - 1
+                                ) {
+                                    createPinBtn.classList.add("active");
+                                } else {
+                                    createPinBtn.classList.remove("active");
+                                }
                             });
 
                             // Allow backspace to move back
@@ -727,6 +736,15 @@ const initApp = async () => {
                                     index > 0
                                 ) {
                                     pinBoxes[index - 1].focus();
+                                }
+
+                                if (
+                                    e.target.value.length === 1 &&
+                                    index === pinBoxes.length - 1
+                                ) {
+                                    createPinBtn.classList.add("active");
+                                } else {
+                                    createPinBtn.classList.remove("active");
                                 }
                             });
                         });
@@ -767,6 +785,7 @@ const initApp = async () => {
                                     firstPin = pin;
                                     title.textContent = "Re-enter your PIN";
                                     createPinBtn.textContent = "Confirm";
+                                    createPinBtn.classList.remove("active");
                                     Array.from(pinBoxes).forEach(
                                         (box) => (box.value = "")
                                     );
