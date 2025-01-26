@@ -734,3 +734,39 @@ body {
 .loading-text:empty {
     display: none;
 }
+
+.fab-reload {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background-color: #6750A4;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fab-reload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 6px 10px 3px rgba(0, 0, 0, 0.2);
+}
+
+.fab-reload:active {
+    transform: translateY(0);
+}
+
+@keyframes ripple {
+    from {
+        box-shadow: 0 0 0 1px rgba(103, 80, 164, 0.25);
+    }
+    to {
+        box-shadow: 0 0 0 16px rgba(103, 80, 164, 0);
+    }
+}

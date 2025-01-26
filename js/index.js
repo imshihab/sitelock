@@ -29,6 +29,35 @@ const saveCredential = (credentialData) => {
 const urlParams = new URLSearchParams(window.location.search);
 const isSidePanel = urlParams.has("sidePanel");
 
+if (isSidePanel) {
+    // Create FAB elements
+    const fab = document.createElement("button");
+    fab.className = "fab-reload";
+
+    // Create icon element
+    const icon = document.createElement("span");
+    icon.className = "material-icons";
+    icon.textContent = "refresh";
+
+    // Add click handler
+    fab.addEventListener("click", () => {
+        // Add ripple effect
+        fab.style.animation = "ripple 0.6s linear";
+
+        // Remove animation after completion
+        setTimeout(() => {
+            fab.style.animation = "";
+        }, 600);
+
+        // Reload the side panel
+        window.location.reload();
+    });
+
+    // Assemble elements
+    fab.appendChild(icon);
+    document.body.appendChild(fab);
+}
+
 const createDomainsList = () => {
     const list = document.createElement("div");
     list.classList.add("domains-container");
