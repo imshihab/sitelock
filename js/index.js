@@ -26,6 +26,9 @@ const saveCredential = (credentialData) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(credentialData));
 };
 
+const urlParams = new URLSearchParams(window.location.search);
+const isSidePanel = urlParams.has("sidePanel");
+
 const createDomainsList = () => {
     const list = document.createElement("div");
     list.classList.add("domains-container");
@@ -402,6 +405,13 @@ const deleteDomain = async (site) => {
         });
 
         passkeyBtn?.addEventListener("click", async () => {
+            if (isSidePanel) {
+                toast(
+                    "Please open the extension Prefrences page to use passkey.",
+                    "error"
+                );
+                return;
+            }
             try {
                 const challenge = generateRandomChallenge();
                 const authOptions = {
@@ -502,6 +512,13 @@ const setupPasskeyRegistration = async (container, redirectUrl) => {
     container.appendChild(regButton);
 
     regButton.addEventListener("click", async () => {
+        if (isSidePanel) {
+            toast(
+                "Please open the extension Prefrences page to enable passkey.",
+                "error"
+            );
+            return;
+        }
         const Check_FIRST_ATTEMPT = localStorage.getItem(FIRST_ATTEMPT);
         if (Check_FIRST_ATTEMPT !== "false") {
             chrome.runtime.sendMessage(

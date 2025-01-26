@@ -14,8 +14,12 @@
         "tabs",
         "cookies",
         "webRequest",
+        "sidePanel",
         "contextMenus"
     ],
+    "side_panel": {
+        "default_path": "index.html?sidePanel=true"
+    },
     "host_permissions": [
         "<all_urls>"
     ],

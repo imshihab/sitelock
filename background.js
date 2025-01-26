@@ -44,6 +44,11 @@ chrome.runtime.onInstalled.addListener(() => {
     // First-time installation logic
     chrome.storage.sync.set({ isFirstInstall: true });
 
+    // Enable side panel for all sites
+    chrome.sidePanel.setOptions({
+        enabled: true,
+    });
+
     // Setup context menu
     chrome.contextMenus.create({
         id: "preferences",
