@@ -1,6 +1,5 @@
 (() => {
     const BoxContainer = document.querySelector("div#BoxContainer");
-
     const UrlContainer = document.createElement("div");
     UrlContainer.className = "url-container";
 
@@ -42,30 +41,95 @@
             form.action = "#";
             form.method = "post";
 
-            const pinInput = document.createElement("input");
-            pinInput.type = "password";
-            pinInput.id = "Password";
-            pinInput.name = "Password";
-            pinInput.className = "password-input";
-            pinInput.minLength = 4;
-            pinInput.required = true;
-            pinInput.setAttribute("placeholder", "Set A Password");
+            // Create the outer container div
+            const passwordContainer = document.createElement("div");
+            passwordContainer.className = "password-container";
 
-            const button = document.createElement("button");
-            button.id = "submit";
-            button.type = "submit";
-            button.textContent = "Confirm";
-            button.className = "set-button";
+            // Create the input element for the password
+            const passInput = document.createElement("input");
+            passInput.type = "password";
+            passInput.id = "Password";
+            passInput.name = "Password";
+            passInput.className = "password-input";
+            passInput.minLength = 4;
+            passInput.required = true;
+            passInput.setAttribute("placeholder", "");
+            passInput.setAttribute("autofocus", "");
 
-            form.appendChild(pinInput);
-            form.appendChild(button);
+            const passwordLabel = document.createElement("label");
+            passwordLabel.className = "password-label";
+            passwordLabel.htmlFor = "Password";
+            passwordLabel.textContent = "Password";
+
+            // Create the show-hide button
+            const showHideButton = document.createElement("button");
+            showHideButton.type = "button"; // Prevent it from submitting a form
+            showHideButton.className = "show-hide-button";
+            showHideButton.textContent = "Show";
+
+            // Toggle password visibility when the button is clicked
+            showHideButton.addEventListener("click", () => {
+                if (passInput.type === "password") {
+                    passInput.type = "text";
+                    showHideButton.textContent = "Hide";
+                } else {
+                    passInput.type = "password";
+                    showHideButton.textContent = "Show";
+                }
+            });
+
+            // Append the password input and show-hide button to the container
+            passwordContainer.appendChild(passInput);
+            passwordContainer.appendChild(passwordLabel);
+            passwordContainer.appendChild(showHideButton);
+
+            // Create the outer container
+            const pinOptionContainer = document.createElement("div");
+            pinOptionContainer.className = "pin-option";
+
+            // Create the material-checkbox container
+            const CheckboxContainer = document.createElement("label");
+            CheckboxContainer.className = "material-checkbox";
+
+            // Create the input element for the checkbox
+            const checkboxInput = document.createElement("input");
+            checkboxInput.type = "checkbox";
+            checkboxInput.id = "pinOnlyCheckbox";
+            checkboxInput.name = "PINonly";
+
+            // Create the span for the checkmark
+            const checkmarkSpan = document.createElement("span");
+            checkmarkSpan.className = "checkmark";
+
+            // Create the span for the label text
+            const labelTextSpan = document.createElement("span");
+            labelTextSpan.className = "label-text";
+            labelTextSpan.textContent = "Use PIN Only";
+
+            // Append the checkbox input and spans to the material-checkbox container
+            CheckboxContainer.appendChild(checkboxInput);
+            CheckboxContainer.appendChild(checkmarkSpan);
+            CheckboxContainer.appendChild(labelTextSpan);
+
+            // Create the confirm button
+            const confirmButton = document.createElement("button");
+            confirmButton.id = "submit";
+            confirmButton.type = "submit";
+            confirmButton.className = "set-button";
+            confirmButton.textContent = "Confirm";
+
+            // Append the material-checkbox container and button to the outer container
+            pinOptionContainer.appendChild(CheckboxContainer);
+            pinOptionContainer.appendChild(confirmButton);
 
             const requirementDiv = document.createElement("div");
             requirementDiv.className = "requirement";
             requirementDiv.textContent = "At Least 4 Characters";
 
+            form.appendChild(passwordContainer);
+            form.appendChild(requirementDiv);
+            form.appendChild(pinOptionContainer);
             BoxContainer.appendChild(form);
-            BoxContainer.appendChild(requirementDiv);
 
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
@@ -89,6 +153,33 @@
                     }
                 );
             });
+
+            let passwordvalue = "";
+            document
+                .getElementById("pinOnlyCheckbox")
+                .addEventListener("change", function (e) {
+                    const passwordInput = document.getElementById("Password");
+                    const requirementDiv =
+                        document.querySelector(".requirement");
+
+                    if (this.checked) {
+                        passwordvalue = passwordInput.value;
+                        passwordInput.value = "";
+                        passwordInput.disabled = true;
+                        passwordInput.removeAttribute("required");
+                        passwordInput.placeholder = "Disabled (PIN only mode)";
+                        requirementDiv.textContent =
+                            "Using PIN-only authentication";
+                        showHideButton.disabled = true;
+                    } else {
+                        passwordInput.value = passwordvalue;
+                        passwordInput.disabled = false;
+                        passwordInput.setAttribute("required", "");
+                        passwordInput.placeholder = "Set A Password";
+                        requirementDiv.textContent = "At Least 4 Characters";
+                        showHideButton.disabled = false;
+                    }
+                });
 
             document.body.appendChild(BoxContainer);
         } else {
