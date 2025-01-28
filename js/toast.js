@@ -104,11 +104,18 @@ document.head.appendChild(styleSheet);
 // Add toast HTML
 document.body.insertAdjacentHTML("beforeend", TOAST_HTML);
 
+// Track timeout ID outside the function
+let toastTimeout = null;
+let showTimeout = null;
+
 // Add click handler for close button
 const closeBtn = document.querySelector(".close-toast");
 if (closeBtn) {
     closeBtn.addEventListener("click", () => {
         const toastBox = document.querySelector(".toast-box");
+        // Clear any pending timeout
+        clearTimeout(toastTimeout);
+        clearTimeout(showTimeout);
         toastBox.classList.remove("show");
     });
 }
@@ -122,6 +129,10 @@ const toast = (message, status = "success", duration = 3000) => {
     // Clear existing classes and timeouts
     toastBox.classList.remove("show", "success", "error");
 
+    // Clear any existing timeouts
+    clearTimeout(toastTimeout);
+    clearTimeout(showTimeout);
+
     // Set new status and icon
     toastBox.classList.add(status);
     toastIcon.innerHTML = TOAST_ICONS[status] || TOAST_ICONS.success;
@@ -129,13 +140,13 @@ const toast = (message, status = "success", duration = 3000) => {
     // Set message
     toastMessage.textContent = `${message}`.replace(/See: https:.*/, "").trim();
 
-    // Show toast with slight delay for animation
-    setTimeout(() => {
+    // Show toast with animation
+    showTimeout = setTimeout(() => {
         toastBox.classList.add("show");
-    }, 100);
 
-    // Hide toast after duration
-    setTimeout(() => {
-        toastBox.classList.remove("show");
-    }, duration);
+        // Start fresh timeout when shown
+        toastTimeout = setTimeout(() => {
+            toastBox.classList.remove("show");
+        }, duration);
+    }, 100);
 };
