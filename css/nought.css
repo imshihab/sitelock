@@ -13,6 +13,8 @@
 }
 
 :root {
+    --md-primary: #246cff;
+    --md-primary-hover: #1557b0;
     --text-primary: #242a31;
     --bg-primary: #f2faff;
 }

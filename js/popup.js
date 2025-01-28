@@ -1,4 +1,5 @@
 (() => {
+    const FIRST_ATTEMPT = "FIRST_ATTEMPT";
     const BoxContainer = document.querySelector("div#BoxContainer");
     const UrlContainer = document.createElement("div");
     UrlContainer.className = "url-container";
@@ -122,6 +123,7 @@
             pinOptionContainer.appendChild(CheckboxContainer);
             pinOptionContainer.appendChild(confirmButton);
 
+            // Create the requirement div
             const requirementDiv = document.createElement("div");
             requirementDiv.className = "requirement";
             requirementDiv.textContent = "At Least 4 Characters";
@@ -131,53 +133,109 @@
             form.appendChild(pinOptionContainer);
             BoxContainer.appendChild(form);
 
+            const handleResponse = (response) => {
+                if (response.status === "success") {
+                    BoxContainer.removeChild(form);
+                    form.removeChild(requirementDiv);
+                    statusBadge.textContent = "Secured";
+                    statusBadge.classList.remove("insecure");
+                    statusBadge.classList.add("secure");
+                    chrome.tabs.reload();
+                } else {
+                    requirementDiv.innerHTML = response.msg;
+                }
+            };
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
                 const password = document.getElementById("Password").value;
+                const pinOnly = document.getElementById("pinOnlyCheckbox");
+                if (pinOnly.checked) {
+                    chrome.runtime.sendMessage(
+                        {
+                            type: "addDomainPINonly",
+                            data: { site: response.status.site, pinOnly: true },
+                        },
+                        handleResponse
+                    );
+                    return;
+                }
+
                 chrome.runtime.sendMessage(
                     {
                         type: "addDomain",
                         data: { password, site: response.status.site },
                     },
-                    function (response) {
-                        if (response.status === "success") {
-                            BoxContainer.removeChild(form);
-                            BoxContainer.removeChild(requirementDiv);
-                            statusBadge.textContent = "Secured";
-                            statusBadge.classList.remove("insecure");
-                            statusBadge.classList.add("secure");
-                            chrome.tabs.reload();
-                        } else {
-                            requirementDiv.innerHTML = response.msg;
-                        }
-                    }
+                    handleResponse
                 );
             });
 
             let passwordvalue = "";
             document
                 .getElementById("pinOnlyCheckbox")
-                .addEventListener("change", function (e) {
-                    const passwordInput = document.getElementById("Password");
-                    const requirementDiv =
-                        document.querySelector(".requirement");
+                .addEventListener("click", function (e) {
+                    const Check_FIRST_ATTEMPT =
+                        localStorage.getItem(FIRST_ATTEMPT);
+                    if (Check_FIRST_ATTEMPT !== "false") {
+                        // Prevent checkbox state change
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
 
-                    if (this.checked) {
-                        passwordvalue = passwordInput.value;
-                        passwordInput.value = "";
-                        passwordInput.disabled = true;
-                        passwordInput.removeAttribute("required");
-                        passwordInput.placeholder = "Disabled (PIN only mode)";
-                        requirementDiv.textContent =
-                            "Using PIN-only authentication";
-                        showHideButton.disabled = true;
+                        chrome.runtime.sendMessage(
+                            { action: "checkFirstInstall" },
+                            (response) => {
+                                if (response.error) {
+                                    toast(response.error, "error");
+                                    return;
+                                }
+
+                                if (response.isFirstInstall) {
+                                    toast(
+                                        "Please set a PIN first to Use PIN Only.",
+                                        "error"
+                                    );
+                                    // Force uncheck if already checked
+                                    this.checked = false;
+                                }
+                            }
+                        );
+                        return false;
+                    }
+                });
+
+            document
+                .getElementById("pinOnlyCheckbox")
+                .addEventListener("change", function (e) {
+                    // Only process changes that passed the click validation
+                    if (localStorage.getItem(FIRST_ATTEMPT) === "false") {
+                        const passwordInput =
+                            document.getElementById("Password");
+                        const requirementDiv =
+                            document.querySelector(".requirement");
+                        const showHideButton =
+                            document.querySelector(".show-hide-button");
+
+                        if (this.checked) {
+                            passwordvalue = passwordInput.value; // Store in window object
+                            passwordInput.value = "";
+                            passwordInput.disabled = true;
+                            passwordInput.removeAttribute("required");
+                            passwordInput.placeholder =
+                                "Disabled (PIN only mode)";
+                            requirementDiv.textContent =
+                                "Using PIN-only authentication";
+                            showHideButton.disabled = true;
+                        } else {
+                            passwordInput.value = passwordvalue || "";
+                            passwordInput.disabled = false;
+                            passwordInput.setAttribute("required", "");
+                            passwordInput.placeholder = "Set A Password";
+                            requirementDiv.textContent =
+                                "At Least 4 Characters";
+                            showHideButton.disabled = false;
+                        }
                     } else {
-                        passwordInput.value = passwordvalue;
-                        passwordInput.disabled = false;
-                        passwordInput.setAttribute("required", "");
-                        passwordInput.placeholder = "Set A Password";
-                        requirementDiv.textContent = "At Least 4 Characters";
-                        showHideButton.disabled = false;
+                        // Force uncheck if validation failed
+                        this.checked = false;
                     }
                 });
 
