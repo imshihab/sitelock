@@ -145,6 +145,7 @@
                     statusBadge.classList.remove("insecure");
                     statusBadge.classList.add("secure");
                     chrome.tabs.reload();
+                    window.close();
                 } else {
                     requirementDiv.innerHTML = response.msg;
                 }
