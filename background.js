@@ -285,6 +285,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })();
 
         return true;
+    } else if (message.type === "addDomainPINonly") {
+        (async () => {
+            try {
+                const result = await chrome.storage.sync.get("domains");
+                const domains = result.domains || [];
+
+                const domain = domains.find(
+                    (item) => item.site === message.data.site
+                );
+
+                if (domain) {
+                    sendResponse({
+                        status: "fail",
+                        msg: "Site already Secured. Reload the page",
+                    });
+                    return;
+                }
+
+                const updatedDomains = domains.concat({
+                    site: message.data.site,
+                    pinOnly: true,
+                });
+                await chrome.storage.sync.set({ domains: updatedDomains });
+                sendResponse({
+                    status: "success",
+                    msg: "Site successfully added!",
+                });
+            } catch (err) {
+                sendResponse({
+                    status: "fail",
+                    msg: "An unexpected error occurred.",
+                });
+            }
+        })();
+
+        return true;
     }
 });
 
@@ -314,7 +350,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         (item) => item.site === hostname
                     );
 
-                    if (domain?.password) {
+                    if (domain?.password || domain?.pinOnly) {
                         sendResponse({
                             status: {
                                 code: "correct",
@@ -366,6 +402,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         });
         return true;
+    } else if (message.type === "authenticatePIN") {
+        const tabId = sender.tab.id;
+        chrome.storage.sync.get(["domains", "goatPIN"], function (result) {
+            const domain = result.domains?.find(
+                (item) => item.site === message.site
+            );
+
+            if (!domain) {
+                chrome.tabs.update(tabId, { url: message.redirectUrl });
+                return;
+            }
+
+            if (result.goatPIN === message.pin) {
+                addAuthenticatedSite(message.site);
+                chrome.tabs.update(tabId, { url: message.redirectUrl });
+            } else {
+                sendResponse({
+                    fail: true,
+                    msg: "PIN does not match.",
+                });
+            }
+        });
+        return true;
     }
 });
 
@@ -391,11 +450,13 @@ chrome.webNavigation.onBeforeNavigate.addListener(
                     (item) => item.site === site
                 );
 
-                if (domain?.password) {
+                if (domain?.password || domain?.pinOnly) {
+                    const _PINONLY = domain.pinOnly ? "&pinOnly=true" : "";
                     const authUrl =
                         chrome.runtime.getURL("auth.html") +
                         "?redirect=" +
-                        encodeURIComponent(details.url);
+                        encodeURIComponent(details.url) +
+                        _PINONLY;
                     chrome.tabs.update(details.tabId, { url: authUrl });
                 }
             });

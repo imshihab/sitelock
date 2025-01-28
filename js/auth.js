@@ -2,6 +2,7 @@
     // Get the redirect URL from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const redirectUrl = urlParams.get("redirect");
+    const pinOnly = urlParams.get("pinOnly");
 
     const currentUrl = new URL(window.location.href);
     const baseUrl = `${currentUrl.origin}${currentUrl.pathname
@@ -22,6 +23,40 @@
     }
     const authSecurityCode = document.getElementById("authSecurityCode");
     authSecurityCode.focus();
+
+    if (pinOnly) {
+        authSecurityCode.remove();
+        const pinBoxes = document.querySelectorAll(".pin-box");
+        pinBoxes[0].focus();
+
+        pinBoxes.forEach((box, index) => {
+            box.addEventListener("input", (e) => {
+                // Only allow digits
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+
+                // Auto move to next input
+                if (
+                    e.target.value.length === 1 &&
+                    index < pinBoxes.length - 1
+                ) {
+                    pinBoxes[index + 1].focus();
+                }
+            });
+
+            // Allow backspace to move back
+            box.addEventListener("keydown", (e) => {
+                if (
+                    e.key === "Backspace" &&
+                    e.target.value === "" &&
+                    index > 0
+                ) {
+                    pinBoxes[index - 1].focus();
+                }
+            });
+        });
+    } else {
+        document.querySelector(".pin-input-container").remove();
+    }
 
     const PasskeyAuthenticate = async (time = 0) => {
         try {
@@ -57,31 +92,62 @@
     document
         .getElementById("authenticationForm")
         .addEventListener("submit", function (e) {
-            const code = authSecurityCode.value;
             e.preventDefault();
-            chrome.runtime.sendMessage(
-                {
-                    type: "authenticate",
-                    code,
-                    site,
-                    redirectUrl,
-                },
-                function (response) {
-                    if (chrome.runtime.lastError) {
-                        toast(
-                            `"Error: ${chrome.runtime.lastError.message}`,
-                            "error"
-                        );
-                    } else {
-                        if (response.fail) {
+            if (pinOnly) {
+                const pinBoxes = document.querySelectorAll(".pin-box");
+                const pin = Array.from(pinBoxes)
+                    .map((box) => box.value)
+                    .join("");
+                chrome.runtime.sendMessage(
+                    {
+                        type: "authenticatePIN",
+                        pin,
+                        site,
+                        redirectUrl,
+                    },
+                    function (response) {
+                        if (chrome.runtime.lastError) {
                             toast(
-                                `Authentication failed: ${response.msg}`,
+                                `"Error: ${chrome.runtime.lastError.message}`,
                                 "error"
                             );
+                        } else {
+                            if (response.fail) {
+                                toast(
+                                    `Authentication failed: ${response.msg}`,
+                                    "error"
+                                );
+                            }
                         }
                     }
-                }
-            );
+                );
+                return;
+            } else {
+                const code = authSecurityCode.value;
+                chrome.runtime.sendMessage(
+                    {
+                        type: "authenticate",
+                        code,
+                        site,
+                        redirectUrl,
+                    },
+                    function (response) {
+                        if (chrome.runtime.lastError) {
+                            toast(
+                                `"Error: ${chrome.runtime.lastError.message}`,
+                                "error"
+                            );
+                        } else {
+                            if (response.fail) {
+                                toast(
+                                    `Authentication failed: ${response.msg}`,
+                                    "error"
+                                );
+                            }
+                        }
+                    }
+                );
+            }
         });
 
     // Store credentials in localStorage
