@@ -212,6 +212,47 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         })();
         return true;
+    } else if (message.type === "deleteDomainPIN") {
+        (async () => {
+            try {
+                const result = await chrome.storage.sync.get("domains");
+                const { goatPIN } = await chrome.storage.sync.get("goatPIN");
+                const domains = result.domains || [];
+                const domain = domains.find(
+                    (item) => item.site === message.data.site
+                );
+
+                if (!domain) {
+                    sendResponse({
+                        status: "fail",
+                        msg: "Site not found. Reload the page",
+                    });
+                    return;
+                }
+
+                if (message.data.pin === goatPIN) {
+                    const updatedDomains = domains.filter(
+                        (item) => item.site !== message.data.site
+                    );
+                    await chrome.storage.sync.set({ domains: updatedDomains });
+                    sendResponse({
+                        status: "success",
+                        msg: "Site successfully deleted!",
+                    });
+                } else {
+                    sendResponse({
+                        status: "fail",
+                        msg: "PIN does not match.",
+                    });
+                }
+            } catch (err) {
+                sendResponse({
+                    status: "fail",
+                    msg: "An unexpected error occurred.",
+                });
+            }
+        })();
+        return true;
     }
 });
 
@@ -503,7 +544,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "SecuredDomains") {
         chrome.storage.sync.get(["domains"], function (result) {
             const data = result.domains || [];
-            const sites = data.map((item) => item.site);
+            const sites = data.map((item) => {
+                return item.pinOnly
+                    ? { site: item.site, pinOnly: item.pinOnly }
+                    : { site: item.site };
+            });
             sendResponse({ data: sites });
         });
         return true;

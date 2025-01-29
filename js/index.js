@@ -324,15 +324,15 @@ async function checkUrl(url) {
     }
 }
 
-const SiteItemUI = (site) => {
+const SiteItemUI = (siteData) => {
     // Create list item
     const li = document.createElement("li");
     li.className = "site-item";
 
     // Create site text
     const siteAnchor = document.createElement("a");
-    siteAnchor.textContent = site;
-    siteAnchor.setAttribute("href", site);
+    siteAnchor.textContent = siteData.site;
+    siteAnchor.setAttribute("href", siteData.site);
     siteAnchor.setAttribute("target", "_blank");
 
     // Create delete button
@@ -343,7 +343,12 @@ const SiteItemUI = (site) => {
     // Add delete functionality
     deleteBtn.addEventListener("click", async () => {
         try {
-            await deleteDomain(site);
+            if (siteData.pinOnly) {
+                await deleteDomainPIN(siteData.site);
+            } else {
+                await deleteDomain(siteData.site);
+            }
+
             li.remove();
             toast("Site successfully deleted");
         } catch (error) {
@@ -378,11 +383,10 @@ const addDomain = async () => {
                 }
                 document.querySelector(".supporting-text").textContent =
                     "Checking site...";
-                const { valid, message } = await checkUrl(site);
-                console.log(valid, message);
+                const { valid, message: MessageOrUrl } = await checkUrl(site);
 
                 if (valid === false) {
-                    toast(message, "error");
+                    toast(MessageOrUrl, "error");
                     document.querySelector(".supporting-text").textContent = "";
                     return;
                 }
@@ -392,14 +396,16 @@ const addDomain = async () => {
                 chrome.runtime.sendMessage(
                     {
                         type: "addDomain",
-                        data: { site: message, password },
+                        data: { site: MessageOrUrl, password },
                     },
                     (response) => {
                         if (response.status === "success") {
                             overlay.remove();
                             document
                                 .querySelector("#domainsList ul")
-                                .appendChild(SiteItemUI(message));
+                                .appendChild(
+                                    SiteItemUI({ site: MessageOrUrl })
+                                );
                             resolve(response);
                         } else {
                             overlay.remove();
@@ -484,6 +490,81 @@ const deleteDomain = async (site) => {
                 chrome.runtime.sendMessage(
                     { type: "deleteDomainPasskey", data: { site } },
                     handleDeleteResponse
+                );
+            } catch (error) {
+                reject(error);
+                overlay.remove();
+            }
+        });
+
+        cancelBtn.addEventListener("click", () => {
+            overlay.remove();
+            reject(new Error("Cancelled by user"));
+        });
+
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+                reject(new Error("Cancelled by user"));
+            }
+        });
+    });
+};
+
+const deleteDomainPIN = async (site) => {
+    const overlay = createPinDialog();
+    document.body.appendChild(overlay);
+
+    return new Promise((resolve, reject) => {
+        const authForm = overlay.querySelector("#pinForm");
+        const cancelBtn = overlay.querySelector("#PINcancelBtn");
+        const pinBoxes = document.querySelectorAll(".pin-box");
+        pinBoxes[0].focus();
+
+        pinBoxes.forEach((box, index) => {
+            box.addEventListener("input", (e) => {
+                // Only allow digits
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+
+                // Auto move to next input
+                if (
+                    e.target.value.length === 1 &&
+                    index < pinBoxes.length - 1
+                ) {
+                    pinBoxes[index + 1].focus();
+                }
+            });
+
+            // Allow backspace to move back
+            box.addEventListener("keydown", (e) => {
+                if (
+                    e.key === "Backspace" &&
+                    e.target.value === "" &&
+                    index > 0
+                ) {
+                    pinBoxes[index - 1].focus();
+                }
+            });
+        });
+
+        authForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const pin = Array.from(pinBoxes)
+                .map((box) => box.value)
+                .join("");
+
+            try {
+                chrome.runtime.sendMessage(
+                    { type: "deleteDomainPIN", data: { site, pin } },
+                    (response) => {
+                        if (response.status === "success") {
+                            overlay.remove();
+                            resolve(response);
+                        } else {
+                            overlay.remove();
+                            reject(new Error(response.msg));
+                        }
+                    }
                 );
             } catch (error) {
                 reject(error);
