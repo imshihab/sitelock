@@ -122,6 +122,13 @@ const createNewDialog = () => {
                 <label for="NewPassword" class="input-label">Password:</label>
                 <div class="active-indicator"></div>
             </div>
+            <div class="requirement">At Least 4 Characters</div>
+            <div class="pin-option">
+                <label class="material-checkbox">
+                    <input type="checkbox" id="pinOnlyCheckbox" name="PINonly" />
+                    <span class="checkmark"></span><span class="label-text">Use PIN Only</span>
+                </label>
+            </div>
             <div class="button-container">
                 <button type="button" id="newCancelBtn" class="button button-cancel">Cancel</button>
                 <button type="submit" class="button button-submit">Submit</button>
@@ -375,9 +382,10 @@ const addDomain = async () => {
         authForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const password = document.getElementById("NewPassword").value;
+            const pinOnly = document.getElementById("pinOnlyCheckbox");
             const site = document.getElementById("NewSite").value;
             try {
-                if (password.length < 4) {
+                if (password.length < 4 && !pinOnly.checked) {
                     toast("Password must be at least 4 characters.", "error");
                     return;
                 }
@@ -393,6 +401,32 @@ const addDomain = async () => {
                 document.querySelector(".supporting-text").textContent =
                     "Valid site";
 
+                if (pinOnly.checked) {
+                    chrome.runtime.sendMessage(
+                        {
+                            type: "addDomainPINonly",
+                            data: { site: MessageOrUrl, pinOnly: true },
+                        },
+                        (response) => {
+                            if (response.status === "success") {
+                                overlay.remove();
+                                document
+                                    .querySelector("#domainsList ul")
+                                    .appendChild(
+                                        SiteItemUI({
+                                            site: MessageOrUrl,
+                                            pinOnly: true,
+                                        })
+                                    );
+                                resolve(response);
+                            } else {
+                                overlay.remove();
+                                reject(new Error(response.msg));
+                            }
+                        }
+                    );
+                    return;
+                }
                 chrome.runtime.sendMessage(
                     {
                         type: "addDomain",
@@ -418,6 +452,74 @@ const addDomain = async () => {
                 overlay.remove();
             }
         });
+
+        let passwordvalue = "";
+        document
+            .getElementById("pinOnlyCheckbox")
+            .addEventListener("click", function (e) {
+                const Check_FIRST_ATTEMPT = localStorage.getItem(FIRST_ATTEMPT);
+                if (Check_FIRST_ATTEMPT !== "false") {
+                    // Prevent checkbox state change
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+
+                    chrome.runtime.sendMessage(
+                        { action: "checkFirstInstall" },
+                        (response) => {
+                            if (response.error) {
+                                toast(response.error, "error");
+                                return;
+                            }
+
+                            if (response.isFirstInstall) {
+                                toast(
+                                    "Please set a PIN first to Use PIN Only.",
+                                    "error"
+                                );
+                                // Force uncheck if already checked
+                                this.checked = false;
+                            }
+                        }
+                    );
+                    return false;
+                }
+            });
+
+        document
+            .getElementById("pinOnlyCheckbox")
+            .addEventListener("change", function (e) {
+                // Only process changes that passed the click validation
+                if (localStorage.getItem(FIRST_ATTEMPT) === "false") {
+                    const showHideButton =
+                        overlay.querySelector(".show-hide-button");
+
+                    const passwordInput =
+                        document.getElementById("NewPassword");
+                    const requirementDiv =
+                        document.querySelector(".requirement");
+
+                    if (this.checked) {
+                        passwordvalue = passwordInput.value; // Store in window object
+                        passwordInput.value = "";
+                        passwordInput.disabled = true;
+                        passwordInput.removeAttribute("required");
+                        passwordInput.placeholder = "Disabled (PIN only mode)";
+                        requirementDiv.textContent =
+                            "Using PIN-only authentication";
+                        showHideButton.disabled = true;
+                    } else {
+                        passwordInput.value = passwordvalue || "";
+                        passwordInput.disabled = false;
+                        passwordInput.setAttribute("required", "");
+                        passwordInput.placeholder = "Set A Password";
+                        requirementDiv.textContent = "At Least 4 Characters";
+                        showHideButton.disabled = false;
+                    }
+                } else {
+                    // Force uncheck if validation failed
+                    this.checked = false;
+                }
+            });
 
         cancelBtn.addEventListener("click", () => {
             overlay.remove();

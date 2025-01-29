@@ -540,7 +540,7 @@ body {
     margin: 0 0 24px 0;
 }
 
-#NewAuthForm, #authForm {
+#pinForm, #NewAuthForm, #authForm {
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -548,6 +548,10 @@ body {
 
 #authForm>*,
 #NewAuthForm>* {
+    margin-bottom: 0px !important;
+}
+
+#pinForm>.pin-input-container {
     margin-bottom: 0px !important;
 }
 
@@ -599,6 +603,9 @@ body {
     outline: none;
 }
 
+.input-field::placeholder {
+    color: transparent;
+}
 
 [data-theme="dark"] .input-field:focus {
     background-color: #3c4043;
@@ -622,7 +629,6 @@ body {
     color: var(--md-primary);
     font-weight: 600;
 }
-
 
 .active-indicator {
     inset: auto 0 0 0;
@@ -676,6 +682,106 @@ body {
 
 .show-hide-button:active {
     transform: translateY(calc(-50% + 1px));
+}
+
+.show-hide-button:disabled {
+    pointer-events: none;
+    opacity: 0.38;
+}
+
+.requirement {
+    color: #6b7280;
+    font-size: 12px;
+    padding: 4px 8px;
+    margin-top: -24px;
+}
+
+.pin-option {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -moz-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -moz-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    height: 32px;
+    column-gap: 8px;
+    padding: 0px 12px 0px 12px;
+    background-color: transparent;
+    margin-top: -16px;
+}
+
+.material-checkbox {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+
+.material-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: relative;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+    border: 2px solid #757575;
+    border-radius: 4px;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.checkmark::after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 1px;
+    width: 8px;
+    height: 14px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
+.material-checkbox>input[type="checkbox"]:checked~.checkmark {
+    background-color: #6200ee;
+    border-color: #6200ee;
+}
+
+.material-checkbox>input[type="checkbox"]:checked~.checkmark::after {
+    display: block;
+}
+
+.material-checkbox:hover>input[type="checkbox"]~.checkmark {
+    border-color: #6200ee;
+}
+
+.material-checkbox>input[type="checkbox"]:focus~.checkmark {
+    box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.2);
+}
+
+.label-text {
+    color: var(--text-primary);
+    opacity: 0.80;
 }
 
 .button-container {
