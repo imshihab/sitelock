@@ -1,5 +1,6 @@
 (() => {
     const FIRST_ATTEMPT = "FIRST_ATTEMPT";
+    const IS_PIN_Only = "IS_PIN_Only";
     const BoxContainer = document.querySelector("div#BoxContainer");
     const UrlContainer = document.createElement("div");
     UrlContainer.className = "url-container";
@@ -20,6 +21,10 @@
         "popup.html",
         "index.html"
     );
+
+    const CheckPINOnly = () => {
+        return Boolean(localStorage.getItem(IS_PIN_Only)) || false;
+    };
 
     UrlContainer.appendChild(statusBadge);
     UrlContainer.appendChild(input);
@@ -55,7 +60,6 @@
             passInput.minLength = 4;
             passInput.required = true;
             passInput.setAttribute("placeholder", "");
-            passInput.setAttribute("autofocus", "");
 
             const passwordLabel = document.createElement("label");
             passwordLabel.className = "password-label";
@@ -101,6 +105,7 @@
             checkboxInput.type = "checkbox";
             checkboxInput.id = "pinOnlyCheckbox";
             checkboxInput.name = "PINonly";
+            checkboxInput.checked = CheckPINOnly();
 
             // Create the span for the checkmark
             const checkmarkSpan = document.createElement("span");
@@ -150,6 +155,19 @@
                     requirementDiv.innerHTML = response.msg;
                 }
             };
+            const passwordInput = document.getElementById("Password");
+
+            if (CheckPINOnly()) {
+                passwordInput.value = "";
+                passwordInput.disabled = true;
+                passwordInput.removeAttribute("required");
+                passwordInput.placeholder = "Disabled (PIN only mode)";
+                requirementDiv.textContent = "Using PIN-only authentication";
+                showHideButton.disabled = true;
+            } else {
+                passInput.setAttribute("autofocus", true);
+            }
+
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
                 const password = document.getElementById("Password").value;
@@ -212,8 +230,6 @@
                 .addEventListener("change", function (e) {
                     // Only process changes that passed the click validation
                     if (localStorage.getItem(FIRST_ATTEMPT) === "false") {
-                        const passwordInput =
-                            document.getElementById("Password");
                         const requirementDiv =
                             document.querySelector(".requirement");
                         const showHideButton =
@@ -232,6 +248,7 @@
                         } else {
                             passwordInput.value = passwordvalue || "";
                             passwordInput.disabled = false;
+                            passwordInput.focus();
                             passwordInput.setAttribute("required", "");
                             passwordInput.placeholder = "Set A Password";
                             requirementDiv.textContent =
