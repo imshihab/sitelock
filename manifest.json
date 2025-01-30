@@ -1,0 +1,43 @@
+{
+    "manifest_version": 3,
+    "name": "SiteLock",
+    "version": "1.0",
+    "description": "A security extension that protects websites with PIN, passwords and passkey, allowing you to control access to sensitive sites.",
+    "author": "Saharia Shihab",
+    "homepage_url": "https://github.com/imshihab/sitelock",
+    "permissions": [
+        "storage",
+        "declarativeNetRequest",
+        "declarativeNetRequestFeedback",
+        "scripting",
+        "webNavigation",
+        "tabs",
+        "cookies",
+        "webRequest",
+        "sidePanel",
+        "contextMenus"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "icons": {
+        "128": "icon128.png"
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "auth.html",
+                "index.html"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}
