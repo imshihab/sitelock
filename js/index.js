@@ -1,3 +1,4 @@
+import * as theme from "./utils/theme.js";
 /** @type {HTMLHeadElement} */
 const HeaderElement = document.querySelector("header.header");
 
