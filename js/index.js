@@ -1,6 +1,10 @@
 import * as theme from "./utils/theme.js";
 import toast from "./utils/toast.js";
-import { checkFirstInstall, SetUpPIN } from "./utils/helpers.js";
+import {
+    checkFirstInstall,
+    SetUpPIN,
+    SetUpPasskeyLogin,
+} from "./utils/helpers.js";
 
 /** @type {HTMLHeadElement} */
 const HeaderElement = document.querySelector("header.header");
@@ -12,14 +16,21 @@ window.addEventListener("scroll", () => {
         HeaderElement.removeAttribute("scrolled");
     }
 });
-const Init = () => {
-    checkFirstInstall((err) => {
-        if (err) {
-            toast(err, "error");
+const Init = async () => {
+    try {
+        const [error, isFirstInstall] = await checkFirstInstall();
+        if (error) {
+            console.error("Error checking first install:", error);
             return;
         }
-        document.getElementById("SettingTitle").after(SetUpPIN());
-    });
+
+        if (isFirstInstall) {
+            document.getElementById("SettingTitle").after(SetUpPIN());
+        }
+        await SetUpPasskeyLogin();
+    } catch (error) {
+        toast(error, "error");
+    }
 };
 
 Init();

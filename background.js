@@ -44,6 +44,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({
                     status: "fail",
                     msg: "PIN already exists. Reload the page",
+                    reload: true,
                 });
                 return;
             }
@@ -57,6 +58,55 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     });
                 }
             );
+        });
+        return true;
+    } else if (message.action === "checkPin") {
+        chrome.storage.sync.get(["goatPIN", "passkeyEnabled"], (result) => {
+            if (result.goatPIN === message.pin) {
+                sendResponse({
+                    status: "success",
+                    msg: "PIN successfully verified!",
+                });
+            } else {
+                sendResponse({
+                    status: "fail",
+                    msg: "PIN does not match.",
+                });
+            }
+        });
+        return true;
+    }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "getPasskeyStatus") {
+        chrome.storage.sync.get(["hasPasskey", "passkeyEnabled"], (result) => {
+            sendResponse({
+                hasPasskey: result.hasPasskey === true,
+                isEnabled: result.passkeyEnabled === true,
+            });
+        });
+        return true;
+    }
+
+    if (message.action === "setPasskeyStatus") {
+        chrome.storage.sync.get(["goatPIN"], (result) => {
+            if (result.goatPIN === message.pin) {
+                chrome.storage.sync.set(
+                    {
+                        hasPasskey: message.data.hasPasskey,
+                        passkeyEnabled: message.data.isEnabled,
+                    },
+                    () => {
+                        sendResponse({ status: "success" });
+                    }
+                );
+            } else {
+                sendResponse({
+                    status: "fail",
+                    msg: "PIN does not match.",
+                });
+            }
         });
         return true;
     }

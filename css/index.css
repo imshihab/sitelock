@@ -194,7 +194,7 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
     box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
 }
 
-
+#pinForm>.button-container,
 .settings-container>.pin-container>#createPinForm>.button-container {
     display: flex;
     justify-content: flex-end;
@@ -202,6 +202,7 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
     gap: 12px;
 }
 
+#pinForm>.button-container>.button,
 .settings-container>.pin-container>#createPinForm>.button-container>.button {
     padding: 0 24px;
     height: 36px;
@@ -213,22 +214,173 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
     transition: background 0.2s;
 }
 
+#pinForm>.button-container>.button.button.button-cancel,
 .settings-container>.pin-container>#createPinForm>.button-container>.button.button-cancel {
     background: transparent;
     color: #5f6368;
 }
 
+#pinForm>.button-container>.button.button.button-cancel:hover,
 .settings-container>.pin-container>#createPinForm>.button-container>.button.button-cancel:hover {
     background: rgba(95, 99, 104, 0.1);
 }
 
+#pinForm>.button-container>.button.button-submit,
 .settings-container>.pin-container>#createPinForm>.button-container>.button.button-submit {
     background: var(--md-primary);
     color: white;
 }
 
+#pinForm>.button-container>.button.button-submit:hover,
 .settings-container>.pin-container>#createPinForm>.button-container>.button.button-submit:hover {
     background: var(--md-primary-hover);
+}
+
+.settings-container>.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-container>.setting-item:last-child {
+    border-bottom: none;
+}
+
+.settings-container>.setting-item>.setting-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-container>.setting-item>.setting-label>.setting-title {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.settings-container>.setting-item>.setting-label>.setting-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.settings-container>.setting-item>.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 32px;
+    margin: 8px;
+}
+
+.settings-container>.setting-item>.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.settings-container>.setting-item>.toggle-switch>.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #E0E0E0;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    border-radius: 32px;
+}
+
+.settings-container>.setting-item>.toggle-switch>.slider::before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #FFFFFF;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15),
+        0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.settings-container>.setting-item>.toggle-switch>input:checked+.slider {
+    background-color: #D3E3FD;
+}
+
+.settings-container>.setting-item>.toggle-switch>input:checked+.slider::before {
+    transform: translateX(20px);
+    background-color: #1A73E8;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15),
+        0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.settings-container>.setting-item>.toggle-switch>.slider:hover {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.settings-container>.setting-item>.toggle-switch>input:checked+.slider:hover {
+    background-color: #B8D5FB;
+}
+
+.settings-container>.setting-item>.toggle-switch>input:focus-visible+.slider {
+    box-shadow: 0 0 0 2px #E8F0FE;
+}
+
+.settings-container>.setting-item>.toggle-switch>input:disabled+.slider {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.settings-container>.setting-item>.toggle-switch>.slider::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    background-color: transparent;
+    border-radius: 40px;
+    transition: background-color 0.2s;
+}
+
+.settings-container>.setting-item>.toggle-switch>.slider:active::after {
+    background-color: rgba(26, 115, 232, 0.08);
+}
+
+.overlay-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.overlay-container>.dialog-container {
+    background: var(--md-surface);
+    border-radius: 24px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .overlay-container>.dialog-container {
+    background-color: #101114;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 16px, rgba(0, 0, 0, 0.24) 0px 16px 16px;
+}
+
+.overlay-container>.dialog-container>.auth-title {
+    color: var(--text-primary);
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0 0 24px 0;
 }
 
 @media (min-width: 640px) {
