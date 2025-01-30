@@ -15,13 +15,14 @@
 :root {
     --text-primary: #242a31;
     --bg-primary: #f2faff;
+    --md-surface: #fff;
+    --md-primary: #246cff;
+    --md-primary-hover: #1557b0;
 }
 
 [data-theme="dark"] {
     --text-primary: #f2faff;
     --bg-primary: #1e1f22;
-    --md-primary: #246cff;
-    --md-primary-hover: #1557b0;
 }
 
 
