@@ -33,6 +33,9 @@ header.header {
 
 }
 
+body[locked] header.header {
+    display: none;
+}
 
 header.header[scrolled] {
     -webkit-box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%),

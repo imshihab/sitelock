@@ -619,6 +619,7 @@ export const isLockedSettings = async (Initialize) => {
             const Settings = document.querySelector("#Settings");
             const Settings__BODY = Settings.innerHTML;
             Settings.innerHTML = ``;
+            document.body.setAttribute("locked", "true");
 
             authenticateUserPIN((err, _) => {
                 if (err) {
@@ -626,6 +627,7 @@ export const isLockedSettings = async (Initialize) => {
                     return false;
                 }
                 Settings.innerHTML = Settings__BODY;
+                document.body.removeAttribute("locked");
                 Initialize();
             }, true);
             return true;
