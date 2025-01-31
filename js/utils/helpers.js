@@ -312,12 +312,12 @@ const AutoPassKey = () => {
                 >Enable automatic passkey authentication</span
             >
         </div>
-        <label class="toggle-switch" id="Auto_Passkey">
-            <input type="checkbox" />
+        <label class="toggle-switch">
+            <input type="checkbox" id="Auto_Passkey"/>
             <span class="slider"></span>
         </label>`;
 
-    const checkBox = AutoPasskeyItem.querySelector("#Auto_Passkey > input");
+    const checkBox = AutoPasskeyItem.querySelector("#Auto_Passkey");
     const isAutoLogin = Storage.get(CONSTANT.AUTO_LOGIN_KEY) === true;
     checkBox.checked = isAutoLogin;
     Storage.set(CONSTANT.AUTO_LOGIN_KEY, isAutoLogin);
@@ -342,7 +342,7 @@ export const SetUpPasskeyLogin = async () => {
         return;
     }
 
-    const checkBox = document.querySelector("#Passkey_Login > input");
+    const checkBox = document.querySelector("#Passkey_Login");
     const AutoPassKeySetting = AutoPassKey();
     try {
         const response = await chrome.runtime.sendMessage({
@@ -487,7 +487,12 @@ export const SetUpPasskeyLogin = async () => {
 };
 
 export const ToggleUsePinOnly = () => {
-    const checkBox = document.querySelector("#Use_pinOnly > input");
+    const checkBox = document.querySelector("#Use_pinOnly");
+    const IsPinOnly = Storage.get(CONSTANT.IS_PIN_Only, false);
+
+    checkBox.checked = IsPinOnly;
+    Storage.set(CONSTANT.IS_PIN_Only, IsPinOnly);
+
     checkBox.addEventListener("click", async function (e) {
         e.preventDefault();
         const [error, isFirstInstall] = await checkFirstInstall();
