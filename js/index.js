@@ -4,6 +4,7 @@ import {
     checkFirstInstall,
     SetUpPIN,
     SetUpPasskeyLogin,
+    ToggleUsePinOnly,
 } from "./utils/helpers.js";
 
 /** @type {HTMLHeadElement} */
@@ -28,6 +29,7 @@ const Init = async () => {
             document.getElementById("SettingTitle").after(SetUpPIN());
         }
         await SetUpPasskeyLogin();
+        ToggleUsePinOnly();
     } catch (error) {
         toast(error, "error");
     }

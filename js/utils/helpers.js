@@ -5,6 +5,7 @@ const CONSTANT = {
     FIRST_ATTEMPT: "FIRST_ATTEMPT",
     STORAGE_KEY: "passkey_credentials",
     AUTO_LOGIN_KEY: "passkey_auto_login",
+    IS_PIN_Only: "IS_PIN_Only",
 };
 
 const isPasskeySupported = async () => {
@@ -409,6 +410,9 @@ export const SetUpPasskeyLogin = async () => {
                                     AutoPassKeySetting
                                 );
                                 toast("Passkey created successfully");
+                                if (redirectUrl()) {
+                                    window.location.href = redirectUrl();
+                                }
                             } else {
                                 toast(res.msg, "error");
                             }
@@ -478,6 +482,39 @@ export const SetUpPasskeyLogin = async () => {
         const checkBox = AutoPassKeySetting.querySelector(
             "#Auto_Passkey > input"
         );
+        checkBox.checked = val;
+    });
+};
+
+export const ToggleUsePinOnly = () => {
+    const checkBox = document.querySelector("#Use_pinOnly > input");
+    checkBox.addEventListener("click", async function (e) {
+        e.preventDefault();
+        const [error, isFirstInstall] = await checkFirstInstall();
+        if (error) {
+            console.error("Error checking first install:", error);
+            return;
+        }
+
+        if (isFirstInstall) {
+            toast(
+                "Please set a PIN first before enabling 'Use PIN Only'.",
+                "error"
+            );
+            checkBox.checked = false;
+            Storage.set(CONSTANT.IS_PIN_Only, false);
+            return;
+        }
+
+        if (checkBox.checked) {
+            checkBox.checked = false;
+            Storage.set(CONSTANT.IS_PIN_Only, false);
+        } else {
+            checkBox.checked = true;
+            Storage.set(CONSTANT.IS_PIN_Only, true);
+        }
+    });
+    Storage.onChange(CONSTANT.IS_PIN_Only, (val) => {
         checkBox.checked = val;
     });
 };
