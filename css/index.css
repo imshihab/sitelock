@@ -130,6 +130,10 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
     box-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 1px 3px 1px rgba(0, 0, 0, .15);
 }
 
+.settings-container:empty {
+    display: none !important;
+}
+
 .settings-container>#SettingTitle {
     color: var(--text-primary);
     font-size: 28px !important;

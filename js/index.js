@@ -7,6 +7,7 @@ import {
     ToggleUsePinOnly,
     ToggleAutoConfirm,
     ToggleLockSetting,
+    isLockedSettings,
 } from "./utils/helpers.js";
 
 /** @type {HTMLHeadElement} */
@@ -39,4 +40,6 @@ const Init = async () => {
     }
 };
 
-Init();
+(async () => {
+    await isLockedSettings(Init);
+})();

@@ -176,7 +176,7 @@ export const checkFirstInstall = async () => {
     }
 };
 
-const createPinDialog = (submitForm) => {
+const createPinDialog = (submitForm, noCancel = false) => {
     const overlay = document.createElement("div");
     overlay.classList.add("overlay-container");
 
@@ -198,13 +198,16 @@ const createPinDialog = (submitForm) => {
     overlay.appendChild(dialog);
 
     const cancelBtn = overlay.querySelector("#PINcancelBtn");
-    cancelBtn.addEventListener("click", () => {
+    if (noCancel === true) {
+        cancelBtn?.remove();
+    }
+    cancelBtn?.addEventListener("click", () => {
         overlay.remove();
         toast("Cancelled by user", "error");
     });
 
     overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) {
+        if (e.target === overlay && noCancel === false) {
             overlay.remove();
             toast("Cancelled by user", "error");
         }
@@ -279,27 +282,25 @@ const registerCredential = async () => {
     }
 };
 
-const authenticateUserPIN = () => {
-    return new Promise((resolve) => {
-        createPinDialog(async (event, pin, overlay) => {
-            event.preventDefault();
-            try {
-                chrome.runtime.sendMessage(
-                    { action: "checkPin", pin: pin },
-                    (response) => {
-                        if (response.status === "success") {
-                            overlay.remove();
-                            resolve([null, pin]);
-                        } else {
-                            resolve([response.msg, false]);
-                        }
+const authenticateUserPIN = (callback, noCancel) => {
+    createPinDialog(async (event, pin, overlay) => {
+        event.preventDefault();
+        try {
+            chrome.runtime.sendMessage(
+                { action: "checkPin", pin: pin },
+                (response) => {
+                    if (response.status === "success") {
+                        overlay.remove();
+                        callback(null, pin);
+                    } else {
+                        callback(response.msg, false);
                     }
-                );
-            } catch (error) {
-                resolve([error.message, false]);
-            }
-        });
-    });
+                }
+            );
+        } catch (error) {
+            callback(error.message, false);
+        }
+    }, noCancel);
 };
 
 const AutoPassKey = () => {
@@ -386,81 +387,83 @@ export const SetUpPasskeyLogin = async () => {
             });
 
             if (!hasPasskey) {
-                const [err, pin] = await authenticateUserPIN();
+                authenticateUserPIN(async (err, pin) => {
+                    if (err) {
+                        toast(err, "error");
+                        return;
+                    }
+                    try {
+                        await registerCredential();
+                        await chrome.runtime.sendMessage(
+                            {
+                                action: "setPasskeyStatus",
+                                data: {
+                                    hasPasskey: true,
+                                    isEnabled: true,
+                                },
+                                pin,
+                            },
+                            (res) => {
+                                if (res.status === "success") {
+                                    Storage.set("passkeyStatus", true);
+                                    checkBox.checked = true;
+                                    SettingItemPasskeyLogin.after(
+                                        AutoPassKeySetting
+                                    );
+                                    toast("Passkey created successfully");
+                                    if (redirectUrl()) {
+                                        window.location.href = redirectUrl();
+                                    }
+                                } else {
+                                    toast(res.msg, "error");
+                                }
+                            }
+                        );
+                    } catch (error) {
+                        console.error("Passkey registration failed:", error);
+                        toast(
+                            "Failed to create passkey. Please try again.",
+                            "error"
+                        );
+                        checkBox.checked = false;
+                        Storage.set("passkeyStatus", false);
+                    }
+                    return;
+                });
+                return;
+            }
+
+            authenticateUserPIN(async (err, pin) => {
                 if (err) {
                     toast(err, "error");
                     return;
                 }
-
-                try {
-                    await registerCredential();
-                    await chrome.runtime.sendMessage(
-                        {
-                            action: "setPasskeyStatus",
-                            data: {
-                                hasPasskey: true,
-                                isEnabled: true,
-                            },
-                            pin,
+                const newState = !isEnabled;
+                await chrome.runtime.sendMessage(
+                    {
+                        action: "setPasskeyStatus",
+                        data: {
+                            hasPasskey: true,
+                            isEnabled: newState,
                         },
-                        (res) => {
-                            if (res.status === "success") {
-                                Storage.set("passkeyStatus", true);
-                                checkBox.checked = true;
-                                SettingItemPasskeyLogin.after(
-                                    AutoPassKeySetting
-                                );
-                                toast("Passkey created successfully");
-                                if (redirectUrl()) {
-                                    window.location.href = redirectUrl();
-                                }
-                            } else {
-                                toast(res.msg, "error");
-                            }
-                        }
-                    );
-                } catch (error) {
-                    console.error("Passkey registration failed:", error);
-                    toast(
-                        "Failed to create passkey. Please try again.",
-                        "error"
-                    );
-                    checkBox.checked = false;
-                    Storage.set("passkeyStatus", false);
-                }
-                return;
-            }
-
-            const [err, pin] = await authenticateUserPIN();
-            if (err) {
-                toast(err, "error");
-                return;
-            }
-            const newState = !isEnabled;
-            await chrome.runtime.sendMessage(
-                {
-                    action: "setPasskeyStatus",
-                    data: {
-                        hasPasskey: true,
-                        isEnabled: newState,
+                        pin,
                     },
-                    pin,
-                },
-                (res) => {
-                    if (res.status === "success") {
-                        checkBox.checked = newState;
-                        Storage.set("passkeyStatus", newState);
-                        toast(
-                            newState
-                                ? "Passkey login enabled"
-                                : "Passkey login disabled",
-                            "success"
-                        );
-                    } else {
-                        toast(res.msg, "error");
+                    (res) => {
+                        if (res.status === "success") {
+                            checkBox.checked = newState;
+                            Storage.set("passkeyStatus", newState);
+                            toast(
+                                newState
+                                    ? "Passkey login enabled"
+                                    : "Passkey login disabled",
+                                "success"
+                            );
+                        } else {
+                            toast(res.msg, "error");
+                        }
                     }
-                }
-            );
+                );
+            });
         } catch (error) {
             toast("Operation failed. Please try again.", "error");
             const { hasPasskey, isEnabled } = await chrome.runtime.sendMessage({
@@ -573,35 +576,65 @@ export const ToggleLockSetting = async () => {
             return;
         }
 
-        const [err, pin] = await authenticateUserPIN();
-        if (err) {
-            toast(err, "error");
-            return;
-        }
-
-        const { isSettingLocked } = await chrome.runtime.sendMessage({
-            action: "isSettingLocked",
-        });
-        const newStatus = !isSettingLocked;
-        await chrome.runtime.sendMessage(
-            {
-                action: "toggleSetting",
-                status: newStatus,
-                pin,
-            },
-            (res) => {
-                if (res.status === "success") {
-                    checkBox.checked = newStatus;
-                    Storage.set("isSettingLocked", newStatus);
-                } else {
-                    toast(res.msg, "error");
-                }
+        authenticateUserPIN(async (err, pin) => {
+            if (err) {
+                toast(err, "error");
+                return;
             }
-        );
+            const { isSettingLocked } = await chrome.runtime.sendMessage({
+                action: "isSettingLocked",
+            });
+            const newStatus = !isSettingLocked;
+            await chrome.runtime.sendMessage(
+                {
+                    action: "toggleSetting",
+                    status: newStatus,
+                    pin,
+                },
+                (res) => {
+                    if (res.status === "success") {
+                        checkBox.checked = newStatus;
+                        Storage.set("isSettingLocked", newStatus);
+                    } else {
+                        toast(res.msg, "error");
+                    }
+                }
+            );
+        });
     });
     Storage.onChange("isSettingLocked", (val) => {
         const checkBox = document.querySelector("#Lock__Setting");
         checkBox.checked = val;
         toast(`Setting ${val ? "locked" : "unlocked"}.`, "success");
     });
+};
+
+export const isLockedSettings = async (Initialize) => {
+    try {
+        const { isSettingLocked } = await chrome.runtime.sendMessage({
+            action: "isSettingLocked",
+        });
+
+        if (isSettingLocked) {
+            const Settings = document.querySelector("#Settings");
+            const Settings__BODY = Settings.innerHTML;
+            Settings.innerHTML = ``;
+
+            authenticateUserPIN((err, _) => {
+                if (err) {
+                    toast(`PIN Authentication error: ${err}`, "error");
+                    return false;
+                }
+                Settings.innerHTML = Settings__BODY;
+                Initialize();
+            }, true);
+            return true;
+        }
+
+        Initialize();
+    } catch (error) {
+        console.error("Error checking lock status:", error);
+        toast("Failed to verify settings lock.", "error");
+        return false;
+    }
 };
