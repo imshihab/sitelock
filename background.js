@@ -8,6 +8,14 @@ chrome.runtime.onInstalled.addListener(() => {
     });
 });
 
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "Settings") {
+        chrome.tabs.create({
+            url: chrome.runtime.getURL("index.html"),
+        });
+    }
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "checkFirstInstall") {
         (async () => {
