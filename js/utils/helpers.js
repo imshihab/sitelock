@@ -542,3 +542,66 @@ export const ToggleAutoConfirm = () => {
         checkBox.checked = val;
     });
 };
+
+export const ToggleLockSetting = async () => {
+    const checkBox = document.querySelector("#Lock__Setting");
+    try {
+        const { isSettingLocked } = await chrome.runtime.sendMessage({
+            action: "isSettingLocked",
+        });
+        Storage.set("isSettingLocked", isSettingLocked);
+        checkBox.checked = isSettingLocked;
+    } catch (error) {
+        toast(`Failed to get Setting status: ${error}`);
+        Storage.set("isSettingLocked", false);
+        checkBox.checked = false;
+    }
+
+    checkBox.addEventListener("click", async function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const [error, isFirstInstall] = await checkFirstInstall();
+        if (error) {
+            console.error("Error checking first install:", error);
+            return;
+        }
+
+        if (isFirstInstall) {
+            toast("Please set a PIN first before Lock Settings.", "error");
+            Storage.set("isSettingLocked", false);
+            checkBox.checked = false;
+            return;
+        }
+
+        const [err, pin] = await authenticateUserPIN();
+        if (err) {
+            toast(err, "error");
+            return;
+        }
+
+        const { isSettingLocked } = await chrome.runtime.sendMessage({
+            action: "isSettingLocked",
+        });
+        const newStatus = !isSettingLocked;
+        await chrome.runtime.sendMessage(
+            {
+                action: "toggleSetting",
+                status: newStatus,
+                pin,
+            },
+            (res) => {
+                if (res.status === "success") {
+                    checkBox.checked = newStatus;
+                    Storage.set("isSettingLocked", newStatus);
+                } else {
+                    toast(res.msg, "error");
+                }
+            }
+        );
+    });
+    Storage.onChange("isSettingLocked", (val) => {
+        const checkBox = document.querySelector("#Lock__Setting");
+        checkBox.checked = val;
+        toast(`Setting ${val ? "locked" : "unlocked"}.`, "success");
+    });
+};

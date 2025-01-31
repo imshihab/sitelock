@@ -6,6 +6,7 @@ import {
     SetUpPasskeyLogin,
     ToggleUsePinOnly,
     ToggleAutoConfirm,
+    ToggleLockSetting,
 } from "./utils/helpers.js";
 
 /** @type {HTMLHeadElement} */
@@ -30,6 +31,7 @@ const Init = async () => {
             document.getElementById("SettingTitle").after(SetUpPIN());
         }
         await SetUpPasskeyLogin();
+        ToggleLockSetting();
         ToggleUsePinOnly();
         ToggleAutoConfirm();
     } catch (error) {

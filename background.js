@@ -119,3 +119,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "isSettingLocked") {
+        chrome.storage.sync.get("isSettingLocked", (result) => {
+            sendResponse({
+                isSettingLocked: result.isSettingLocked === true,
+            });
+        });
+        return true;
+    }
+
+    if (message.action === "toggleSetting") {
+        chrome.storage.sync.get(["goatPIN"], (result) => {
+            if (result.goatPIN === message.pin) {
+                chrome.storage.sync.set(
+                    {
+                        isSettingLocked: message.status,
+                    },
+                    () => {
+                        sendResponse({ status: "success" });
+                    }
+                );
+            } else {
+                sendResponse({
+                    status: "fail",
+                    msg: "PIN does not match.",
+                });
+            }
+        });
+        return true;
+    }
+});
