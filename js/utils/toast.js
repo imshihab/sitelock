@@ -82,7 +82,8 @@ const TOAST_STYLES = `
     margin-right: 24px !important;
 }`;
 
-const TOAST_HTML = `
+const TOAST_HTML = document.createElement("div");
+TOAST_HTML.innerHTML = /*html*/ `
 <div class="toast-box">
     <div class="toast-container">
         <span class="toast-icon"></span>
@@ -99,12 +100,12 @@ const styleSheet = document.createElement("style");
 styleSheet.textContent = TOAST_STYLES;
 document.head.appendChild(styleSheet);
 
-document.body.insertAdjacentHTML("beforeend", TOAST_HTML);
+document.body.insertAdjacentHTML("beforeend", TOAST_HTML.innerHTML);
 
 let toastTimeout = null;
 let showTimeout = null;
 
-const closeBtn = document.querySelector(".close-toast");
+const closeBtn = TOAST_HTML.querySelector(".close-toast");
 if (closeBtn) {
     closeBtn.addEventListener("click", () => {
         const toastBox = document.querySelector(".toast-box");
@@ -115,6 +116,10 @@ if (closeBtn) {
 }
 
 const toast = (message, status = "success", duration = 3000) => {
+    if (!document.querySelector(".toast-box")) {
+        document.body.insertAdjacentHTML("beforeend", TOAST_HTML.innerHTML);
+    }
+
     const toastBox = document.querySelector(".toast-box");
     const toastIcon = toastBox.querySelector(".toast-icon");
     const toastMessage = toastBox.querySelector(".toast-message");
