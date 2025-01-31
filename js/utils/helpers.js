@@ -214,6 +214,22 @@ const createPinDialog = (submitForm, noCancel = false) => {
     });
 
     const PinForm = overlay.querySelector("#pinForm");
+    const pinBoxes = overlay.querySelectorAll(".pin-box");
+
+    const checkAutoConfirm = () => {
+        const pin = Array.from(pinBoxes)
+            .map((box) => box.value)
+            .join("");
+        if (Storage.get(CONSTANT.Auto_Confirm, false) && pin.length === 4) {
+            const event = new Event("submit");
+            PinForm.dispatchEvent(event);
+        }
+    };
+
+    pinBoxes.forEach((box) => {
+        box.addEventListener("input", checkAutoConfirm);
+    });
+
     PinForm.addEventListener("submit", (e) => {
         const pin = Array.from(pinBoxes)
             .map((box) => box.value)
@@ -222,8 +238,6 @@ const createPinDialog = (submitForm, noCancel = false) => {
     });
 
     document.body.appendChild(overlay);
-
-    const pinBoxes = overlay.querySelectorAll(".pin-box");
     pinBoxes[0].focus();
 
     return overlay;
