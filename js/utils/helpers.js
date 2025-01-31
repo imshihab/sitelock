@@ -4,6 +4,7 @@ import toast from "./toast.js";
 const CONSTANT = {
     FIRST_ATTEMPT: "FIRST_ATTEMPT",
     STORAGE_KEY: "passkey_credentials",
+    AUTO_LOGIN_KEY: "passkey_auto_login",
 };
 
 const isPasskeySupported = async () => {
@@ -299,11 +300,36 @@ const authenticateUserPIN = () => {
     });
 };
 
+const AutoPassKey = () => {
+    const AutoPasskeyItem = document.createElement("div");
+    AutoPasskeyItem.className = "setting-item";
+    AutoPasskeyItem.id = "AUTO__PASSKEY";
+    AutoPasskeyItem.innerHTML = /*html*/ `
+        <div class="setting-label">
+            <span class="setting-title">Auto Passkey Login</span>
+            <span class="setting-description"
+                >Enable automatic passkey authentication</span
+            >
+        </div>
+        <label class="toggle-switch" id="Auto_Passkey">
+            <input type="checkbox" />
+            <span class="slider"></span>
+        </label>`;
+
+    const checkBox = AutoPasskeyItem.querySelector("#Auto_Passkey > input");
+    const isAutoLogin = Storage.get(CONSTANT.AUTO_LOGIN_KEY) === true;
+    checkBox.checked = isAutoLogin;
+    Storage.set(CONSTANT.AUTO_LOGIN_KEY, isAutoLogin);
+    checkBox.addEventListener("change", (e) => {
+        Storage.set(CONSTANT.AUTO_LOGIN_KEY, e.target.checked);
+    });
+    return AutoPasskeyItem;
+};
+
 export const SetUpPasskeyLogin = async () => {
     const isSupported = await isPasskeySupported();
+    const SettingItemPasskeyLogin = document.querySelector("#PASSKEY__LOGIN");
     if (!isSupported) {
-        const SettingItemPasskeyLogin =
-            document.querySelector("#PASSKEY__LOGIN");
         SettingItemPasskeyLogin.innerHTML = `This device does not support passkeys.`;
         return;
     }
@@ -316,6 +342,7 @@ export const SetUpPasskeyLogin = async () => {
     }
 
     const checkBox = document.querySelector("#Passkey_Login > input");
+    const AutoPassKeySetting = AutoPassKey();
     try {
         const response = await chrome.runtime.sendMessage({
             action: "getPasskeyStatus",
@@ -324,6 +351,8 @@ export const SetUpPasskeyLogin = async () => {
         const isEnabled = response.isEnabled;
         Storage.set("passkeyStatus", hasPasskey && isEnabled);
         checkBox.checked = hasPasskey && isEnabled;
+        if (hasPasskey && isEnabled)
+            SettingItemPasskeyLogin.after(AutoPassKeySetting);
     } catch (error) {
         toast(`Failed to get passkey status: ${error}`);
         Storage.set("passkeyStatus", false);
@@ -376,6 +405,9 @@ export const SetUpPasskeyLogin = async () => {
                             if (res.status === "success") {
                                 Storage.set("passkeyStatus", true);
                                 checkBox.checked = true;
+                                SettingItemPasskeyLogin.after(
+                                    AutoPassKeySetting
+                                );
                                 toast("Passkey created successfully");
                             } else {
                                 toast(res.msg, "error");
@@ -400,9 +432,6 @@ export const SetUpPasskeyLogin = async () => {
                 return;
             }
             const newState = !isEnabled;
-            checkBox.checked = newState;
-            Storage.set("passkeyStatus", newState);
-
             await chrome.runtime.sendMessage(
                 {
                     action: "setPasskeyStatus",
@@ -414,6 +443,8 @@ export const SetUpPasskeyLogin = async () => {
                 },
                 (res) => {
                     if (res.status === "success") {
+                        checkBox.checked = newState;
+                        Storage.set("passkeyStatus", newState);
                         toast(
                             newState
                                 ? "Passkey login enabled"
@@ -430,11 +461,23 @@ export const SetUpPasskeyLogin = async () => {
             const { hasPasskey, isEnabled } = await chrome.runtime.sendMessage({
                 action: "getPasskeyStatus",
             });
-            Storage.set("passkeyStatus", hasPasskey && isEnabled);
-            checkBox.checked = hasPasskey && isEnabled;
+            const isTrue = hasPasskey && isEnabled;
+            Storage.set("passkeyStatus", isTrue);
+            checkBox.checked = isTrue;
         }
     });
     Storage.onChange("passkeyStatus", (val) => {
+        checkBox.checked = val;
+        if (val === true) {
+            SettingItemPasskeyLogin.after(AutoPassKeySetting);
+        } else {
+            AutoPassKeySetting.remove();
+        }
+    });
+    Storage.onChange(CONSTANT.AUTO_LOGIN_KEY, (val) => {
+        const checkBox = AutoPassKeySetting.querySelector(
+            "#Auto_Passkey > input"
+        );
         checkBox.checked = val;
     });
 };
