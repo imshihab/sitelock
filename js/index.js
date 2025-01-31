@@ -5,6 +5,7 @@ import {
     SetUpPIN,
     SetUpPasskeyLogin,
     ToggleUsePinOnly,
+    ToggleAutoConfirm,
 } from "./utils/helpers.js";
 
 /** @type {HTMLHeadElement} */
@@ -30,6 +31,7 @@ const Init = async () => {
         }
         await SetUpPasskeyLogin();
         ToggleUsePinOnly();
+        ToggleAutoConfirm();
     } catch (error) {
         toast(error, "error");
     }

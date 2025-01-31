@@ -6,6 +6,7 @@ const CONSTANT = {
     STORAGE_KEY: "passkey_credentials",
     AUTO_LOGIN_KEY: "passkey_auto_login",
     IS_PIN_Only: "IS_PIN_Only",
+    Auto_Confirm: "IS_Auto_Confirm",
 };
 
 const isPasskeySupported = async () => {
@@ -479,9 +480,7 @@ export const SetUpPasskeyLogin = async () => {
         }
     });
     Storage.onChange(CONSTANT.AUTO_LOGIN_KEY, (val) => {
-        const checkBox = AutoPassKeySetting.querySelector(
-            "#Auto_Passkey > input"
-        );
+        const checkBox = AutoPassKeySetting.querySelector("#Auto_Passkey");
         checkBox.checked = val;
     });
 };
@@ -520,6 +519,26 @@ export const ToggleUsePinOnly = () => {
         }
     });
     Storage.onChange(CONSTANT.IS_PIN_Only, (val) => {
+        checkBox.checked = val;
+    });
+};
+
+export const ToggleAutoConfirm = () => {
+    const checkBox = document.querySelector("#AUTO__CONFIRM");
+    const isAutoConfirm = Storage.get(CONSTANT.Auto_Confirm, false);
+    checkBox.checked = isAutoConfirm;
+    Storage.set(CONSTANT.Auto_Confirm, isAutoConfirm);
+
+    checkBox.addEventListener("click", function (e) {
+        if (checkBox.checked === false) {
+            checkBox.checked = false;
+            Storage.set(CONSTANT.Auto_Confirm, false);
+        } else {
+            checkBox.checked = true;
+            Storage.set(CONSTANT.Auto_Confirm, true);
+        }
+    });
+    Storage.onChange(CONSTANT.Auto_Confirm, (val) => {
         checkBox.checked = val;
     });
 };
