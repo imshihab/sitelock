@@ -105,22 +105,21 @@ document.body.insertAdjacentHTML("beforeend", TOAST_HTML.innerHTML);
 let toastTimeout = null;
 let showTimeout = null;
 
-const closeBtn = TOAST_HTML.querySelector(".close-toast");
-if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-        const toastBox = document.querySelector(".toast-box");
-        clearTimeout(toastTimeout);
-        clearTimeout(showTimeout);
-        toastBox.classList.remove("show");
-    });
-}
-
 const toast = (message, status = "success", duration = 3000) => {
     if (!document.querySelector(".toast-box")) {
         document.body.insertAdjacentHTML("beforeend", TOAST_HTML.innerHTML);
     }
-
     const toastBox = document.querySelector(".toast-box");
+
+    const closeBtn = document.querySelector(".close-toast");
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            clearTimeout(toastTimeout);
+            clearTimeout(showTimeout);
+            toastBox.classList.remove("show");
+        });
+    }
+
     const toastIcon = toastBox.querySelector(".toast-icon");
     const toastMessage = toastBox.querySelector(".toast-message");
 
