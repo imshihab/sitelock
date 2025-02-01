@@ -1,7 +1,8 @@
 import Storage from "./esmls.js";
 import toast from "./toast.js";
+import addDomain from "./Domains.js";
 
-const CONSTANT = {
+export const CONSTANT = {
     FIRST_ATTEMPT: "FIRST_ATTEMPT",
     STORAGE_KEY: "passkey_credentials",
     AUTO_LOGIN_KEY: "passkey_auto_login",
@@ -690,7 +691,7 @@ const createDomainsList = () => {
     return [domainsList, addButton, ul];
 };
 
-const SiteItemUI = (siteData) => {
+export const SiteItemUI = (siteData) => {
     const li = document.createElement("li");
     li.className = "site-item";
 
@@ -725,11 +726,14 @@ export const loadDomains = async () => {
     const domains = await fetchDomains();
     addButton.addEventListener("click", async () => {
         try {
-            toast("Site successfully added");
+            await addDomain();
         } catch (error) {
             toast(error.message, "error");
         }
     });
+
+    const Settings = document.querySelector("#Settings");
+    Settings.after(domainsList);
 
     // If no domains, return early
     if (domains.length === 0) {
@@ -741,7 +745,4 @@ export const loadDomains = async () => {
         const li = SiteItemUI(site);
         ul.appendChild(li);
     });
-
-    const Settings = document.querySelector("#Settings");
-    Settings.after(domainsList);
 };

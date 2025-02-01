@@ -165,3 +165,52 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 });
+
+// Add domain with password
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "addDomain") {
+        (async () => {
+            try {
+                const result = await chrome.storage.sync.get("domains");
+                const domains = result.domains || [];
+
+                const domain = domains.find(
+                    (item) => item.site === message.data.site
+                );
+
+                if (domain) {
+                    sendResponse({
+                        status: "fail",
+                        msg: "Site already Secured. Reload the page",
+                    });
+                    return;
+                }
+
+                if (message.pinOnly) {
+                    const updatedDomains = domains.concat({
+                        site: message.data.site,
+                        pinOnly: true,
+                    });
+                    await chrome.storage.sync.set({ domains: updatedDomains });
+                } else {
+                    const updatedDomains = domains.concat({
+                        site: message.data.site,
+                        pass: message.data.password,
+                    });
+                    await chrome.storage.sync.set({ domains: updatedDomains });
+                }
+                sendResponse({
+                    status: "success",
+                    msg: "Site successfully added!",
+                });
+            } catch (err) {
+                sendResponse({
+                    status: "fail",
+                    msg: "An unexpected error occurred.",
+                });
+            }
+        })();
+
+        return true;
+    }
+});
