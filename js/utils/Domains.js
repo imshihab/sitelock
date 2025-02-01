@@ -1,4 +1,10 @@
-import { checkFirstInstall, CONSTANT, SiteItemUI } from "./helpers.js";
+import {
+    checkFirstInstall,
+    CONSTANT,
+    SiteItemUI,
+    PINInputsFunction,
+    generateRandomChallenge,
+} from "./helpers.js";
 import Storage from "./esmls.js";
 import toast from "./toast.js";
 
@@ -91,13 +97,13 @@ const createNewDialog = () => {
     const cancelBtn = overlay.querySelector("#newCancelBtn");
     cancelBtn.addEventListener("click", () => {
         overlay.remove();
-        toast("Cancelled by user");
+        toast("Cancelled by user", "error");
     });
 
     overlay.addEventListener("click", (e) => {
         if (e.target === overlay) {
             overlay.remove();
-            toast("Cancelled by user");
+            toast("Cancelled by user", "error");
         }
     });
 
@@ -158,8 +164,127 @@ const createNewDialog = () => {
     return overlay;
 };
 
+const createDeleteDialog = async (siteData, li) => {
+    const { isEnabled } = await chrome.runtime.sendMessage({
+        action: "getPasskeyStatus",
+    });
+    const overlay = document.createElement("div");
+    overlay.classList.add("overlay-container");
+
+    const dialog = document.createElement("div");
+    dialog.classList.add("dialog-container");
+
+    dialog.innerHTML = /*html*/ `
+        <h3 class="auth-title">Authentication Required</h3>
+        <form id="authForm">
+            <div class="button-container">
+                <button type="button" id="cancelBtn" class="button button-cancel">Cancel</button>
+                <button type="submit" class="button button-submit">Submit</button>
+                ${
+                    isEnabled
+                        ? `<button type="button" id="passkeyBtn" class="button button-passkey">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="M120-160v-112q0-34 17.5-62.5T184-378q62-31 126-46.5T440-440q20 0 40 1.5t40 4.5q-4 58 21 109.5t73 84.5v80H120ZM760-40l-60-60v-186q-44-13-72-49.5T600-420q0-58 41-99t99-41q58 0 99 41t41 99q0 45-25.5 80T790-290l50 50-60 60 60 60-80 80ZM440-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm300 80q17 0 28.5-11.5T780-440q0-17-11.5-28.5T740-480q-17 0-28.5 11.5T700-440q0 17 11.5 28.5T740-400Z"/></svg>
+                </button>`
+                        : ""
+                }
+            </div>
+        </form>
+    `;
+    overlay.appendChild(dialog);
+
+    if (siteData.pinOnly) {
+        const PINinputContainer = document.createElement("div");
+        PINinputContainer.className = "pin-input-container";
+        PINinputContainer.appendChild(PINInputsFunction());
+        dialog.querySelector(".button-container").before(PINinputContainer);
+    } else {
+        const PassWordContainer = document.createElement("div");
+        PassWordContainer.className = "input-container passIconField";
+        PassWordContainer.innerHTML = `
+            <input type="password" class="input-field passIcon" id="password" required placeholder=" ">
+            <label for="password" class="input-label">Password:</label>
+            <div class="active-indicator"></div>`;
+        dialog.querySelector(".button-container").before(PassWordContainer);
+        showHidePassword(dialog, "#password");
+    }
+
+    const cancelBtn = overlay.querySelector("#cancelBtn");
+    cancelBtn.addEventListener("click", () => {
+        overlay.remove();
+        toast("Cancelled by user", "error");
+    });
+
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+            overlay.remove();
+            toast("Cancelled by user", "error");
+        }
+    });
+
+    const handleDeleteResponse = (response) => {
+        if (response.status === "success") {
+            overlay.remove();
+            li.remove();
+            toast("Site successfully deleted");
+        } else {
+            overlay.remove();
+            toast(response.msg, "error");
+        }
+    };
+
+    const passkeyBtn = overlay.querySelector("#passkeyBtn");
+    passkeyBtn?.addEventListener("click", async () => {
+        try {
+            const challenge = generateRandomChallenge();
+            const authOptions = {
+                challenge,
+                rpId: window.location.hostname,
+                userVerification: "required",
+                timeout: 60000,
+            };
+
+            await navigator.credentials.get({ publicKey: authOptions });
+
+            chrome.runtime.sendMessage(
+                { type: "deleteDomainPasskey", data: { site: siteData.site } },
+                handleDeleteResponse
+            );
+        } catch (error) {
+            toast(error, "error");
+        }
+    });
+    const authForm = overlay.querySelector("#authForm");
+    authForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const pinBoxes = overlay?.querySelectorAll(".pin-box");
+        const password = overlay?.querySelector("#password")?.value;
+        const pin = Array.from(pinBoxes)
+            .map((box) => box.value)
+            .join("");
+
+        try {
+            chrome.runtime.sendMessage(
+                {
+                    type: "deleteDomain",
+                    data: {
+                        site: siteData.site,
+                        password,
+                        pin,
+                        IsPinOnly: siteData.pinOnly,
+                    },
+                },
+                handleDeleteResponse
+            );
+        } catch (error) {
+            toast(error, "error");
+            overlay.remove();
+        }
+    });
+    return overlay;
+};
+
 // Domain management functions
-const addDomain = async () => {
+export const addDomain = async () => {
     const overlay = createNewDialog();
     document.body.appendChild(overlay);
     overlay.querySelector("#NewSite").focus();
@@ -214,4 +339,12 @@ const addDomain = async () => {
     });
 };
 
-export default addDomain;
+export const removeDomain = async (siteData, li) => {
+    const overlay = await createDeleteDialog(siteData, li);
+    document.body.appendChild(overlay);
+
+    const pinBoxes = overlay.querySelectorAll(".pin-box");
+    const Password = overlay.querySelector("#password");
+    pinBoxes[0]?.focus();
+    Password?.focus();
+};

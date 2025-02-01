@@ -1,3 +1,8 @@
+const toDomain = (_url) => {
+    const url = new URL(_url);
+    return url.origin + "/";
+};
+
 chrome.runtime.onInstalled.addListener(() => {
     chrome.tabs.create({ url: chrome.runtime.getURL("index.html") });
     chrome.storage.sync.set({ isFirstInstall: true });
@@ -166,7 +171,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-// Add domain with password
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "addDomain") {
         (async () => {
@@ -185,15 +189,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     });
                     return;
                 }
+                const Domain = toDomain(message.data.site);
                 if (message.data.pinOnly) {
                     const updatedDomains = domains.concat({
-                        site: message.data.site,
+                        site: Domain,
                         pinOnly: true,
                     });
                     await chrome.storage.sync.set({ domains: updatedDomains });
                 } else {
                     const updatedDomains = domains.concat({
-                        site: message.data.site,
+                        site: Domain,
                         pass: message.data.password,
                     });
                     await chrome.storage.sync.set({ domains: updatedDomains });
@@ -210,6 +215,101 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         })();
 
+        return true;
+    }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "deleteDomain") {
+        (async () => {
+            try {
+                const result = await chrome.storage.sync.get("domains");
+                const goatPIN = await chrome.storage.sync.get("goatPIN");
+                const domains = result.domains || [];
+                const domain = domains.find(
+                    (item) => item.site === message.data.site
+                );
+                if (!domain) {
+                    sendResponse({
+                        status: "fail",
+                        msg: "Site not found. Reload the page",
+                    });
+                    return;
+                }
+                if (message.data.pinOnly) {
+                    if (message.data.pin === goatPIN) {
+                        const updatedDomains = domains.filter(
+                            (item) => item.site !== message.data.site
+                        );
+                        await chrome.storage.sync.set({
+                            domains: updatedDomains,
+                        });
+                        sendResponse({
+                            status: "success",
+                            msg: "Site successfully deleted!",
+                        });
+                    } else {
+                        sendResponse({
+                            status: "fail",
+                            msg: "PIN does not match.",
+                        });
+                    }
+                    return;
+                }
+
+                if (message.data.password === domain.pass) {
+                    const updatedDomains = domains.filter(
+                        (item) => item.site !== message.data.site
+                    );
+                    await chrome.storage.sync.set({ domains: updatedDomains });
+                    sendResponse({
+                        status: "success",
+                        msg: "Site successfully deleted!",
+                    });
+                } else {
+                    sendResponse({
+                        status: "fail",
+                        msg: "Password does not match.",
+                    });
+                }
+            } catch (err) {
+                sendResponse({
+                    status: "fail",
+                    msg: "An unexpected error occurred.",
+                });
+            }
+        })();
+        return true;
+    } else if (message.type === "deleteDomainPasskey") {
+        (async () => {
+            try {
+                const result = await chrome.storage.sync.get("domains");
+                const domains = result.domains || [];
+                const domain = domains.find(
+                    (item) => item.site === message.data.site
+                );
+                if (!domain) {
+                    sendResponse({
+                        status: "fail",
+                        msg: "Site not found. Reload the page",
+                    });
+                    return;
+                }
+                const updatedDomains = domains.filter(
+                    (item) => item.site !== message.data.site
+                );
+                await chrome.storage.sync.set({ domains: updatedDomains });
+                sendResponse({
+                    status: "success",
+                    msg: "Site successfully deleted!",
+                });
+            } catch (err) {
+                sendResponse({
+                    status: "fail",
+                    msg: "An unexpected error occurred.",
+                });
+            }
+        })();
         return true;
     }
 });

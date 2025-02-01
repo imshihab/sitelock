@@ -243,6 +243,18 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
     background: var(--md-primary-hover);
 }
 
+
+.button-passkey {
+    background: #0b8043;
+    color: white;
+    margin-left: auto !important;
+}
+
+.button-passkey:hover {
+    background: #0a6e3a;
+}
+
+
 .settings-container>.setting-item {
     display: flex;
     justify-content: space-between;

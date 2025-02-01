@@ -1,6 +1,6 @@
 import Storage from "./esmls.js";
 import toast from "./toast.js";
-import addDomain from "./Domains.js";
+import { addDomain, removeDomain } from "./Domains.js";
 
 export const CONSTANT = {
     FIRST_ATTEMPT: "FIRST_ATTEMPT",
@@ -33,13 +33,13 @@ const isPasskeySupported = async () => {
     }
 };
 
-const generateRandomChallenge = (length = 32) => {
+export const generateRandomChallenge = (length = 32) => {
     const challenge = new Uint8Array(length);
     crypto.getRandomValues(challenge);
     return challenge;
 };
 
-const getCredentials = () => Storage.get(CONSTANT.STORAGE_KEY, {});
+const getCredentials = () => Storage.get(CONSTANT.STORAGE_KEY) || {};
 const saveCredential = (credentialData) => {
     if (Storage.get(CONSTANT.STORAGE_KEY)) {
         throw new Error("Passkey already exists.");
@@ -50,7 +50,7 @@ const saveCredential = (credentialData) => {
 const redirectUrl = () =>
     new URLSearchParams(window.location.search).get("redirect");
 
-const PINInputsFunction = () => {
+export const PINInputsFunction = () => {
     const container = document.createElement("div");
     container.className = "pin-inputs";
     container.innerHTML = /*html*/ `
@@ -221,7 +221,7 @@ const createPinDialog = (submitForm, noCancel = false) => {
         const pin = Array.from(pinBoxes)
             .map((box) => box.value)
             .join("");
-        if (Storage.get(CONSTANT.Auto_Confirm, false) && pin.length === 4) {
+        if (Storage.get(CONSTANT.Auto_Confirm) && pin.length === 4) {
             const event = new Event("submit");
             PinForm.dispatchEvent(event);
         }
@@ -505,7 +505,7 @@ export const SetUpPasskeyLogin = async () => {
 
 export const ToggleUsePinOnly = () => {
     const checkBox = document.querySelector("#Use_pinOnly");
-    const IsPinOnly = Storage.get(CONSTANT.IS_PIN_Only, false);
+    const IsPinOnly = Storage.get(CONSTANT.IS_PIN_Only) || false;
 
     checkBox.checked = IsPinOnly;
     Storage.set(CONSTANT.IS_PIN_Only, IsPinOnly);
@@ -543,7 +543,7 @@ export const ToggleUsePinOnly = () => {
 
 export const ToggleAutoConfirm = () => {
     const checkBox = document.querySelector("#AUTO__CONFIRM");
-    const isAutoConfirm = Storage.get(CONSTANT.Auto_Confirm, false);
+    const isAutoConfirm = Storage.get(CONSTANT.Auto_Confirm) || false;
     checkBox.checked = isAutoConfirm;
     Storage.set(CONSTANT.Auto_Confirm, isAutoConfirm);
 
@@ -577,7 +577,6 @@ export const ToggleLockSetting = async () => {
 
     checkBox.addEventListener("click", async function (e) {
         e.preventDefault();
-        e.stopImmediatePropagation();
         const [error, isFirstInstall] = await checkFirstInstall();
         if (error) {
             console.error("Error checking first install:", error);
@@ -586,7 +585,6 @@ export const ToggleLockSetting = async () => {
 
         if (isFirstInstall) {
             toast("Please set a PIN first before Lock Settings.", "error");
-            Storage.set("isSettingLocked", false);
             checkBox.checked = false;
             return;
         }
@@ -706,11 +704,7 @@ export const SiteItemUI = (siteData) => {
 
     deleteBtn.addEventListener("click", async () => {
         try {
-            if (siteData.pinOnly) {
-            } else {
-            }
-            li.remove();
-            toast("Site successfully deleted");
+            await removeDomain(siteData, li);
         } catch (error) {
             toast(error.message, "error");
         }
@@ -739,6 +733,7 @@ export const loadDomains = async () => {
     if (domains.length === 0) {
         return;
     }
+    console.log(domains);
 
     // Render each domain
     domains.forEach((site) => {
