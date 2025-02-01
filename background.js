@@ -185,8 +185,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     });
                     return;
                 }
-
-                if (message.pinOnly) {
+                if (message.data.pinOnly) {
                     const updatedDomains = domains.concat({
                         site: message.data.site,
                         pinOnly: true,
