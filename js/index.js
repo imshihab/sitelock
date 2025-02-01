@@ -8,6 +8,7 @@ import {
     ToggleAutoConfirm,
     ToggleLockSetting,
     isLockedSettings,
+    loadDomains,
 } from "./utils/helpers.js";
 
 /** @type {HTMLHeadElement} */
@@ -35,6 +36,7 @@ const Init = async () => {
         ToggleLockSetting();
         ToggleUsePinOnly();
         ToggleAutoConfirm();
+        loadDomains();
     } catch (error) {
         toast(error, "error");
     }

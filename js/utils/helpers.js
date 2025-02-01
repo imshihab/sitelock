@@ -654,3 +654,94 @@ export const isLockedSettings = async (Initialize) => {
         return false;
     }
 };
+
+const fetchDomains = () =>
+    new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: "SecuredDomains" }, (response) => {
+            if (response && response.data) {
+                resolve(response.data);
+            } else {
+                reject(new Error("Failed to load domains"));
+            }
+        });
+    });
+
+const createDomainsList = () => {
+    const domainsList = document.createElement("div");
+    domainsList.classList.add("domains-container");
+    domainsList.id = "domainsList";
+
+    const addButtonContainer = document.createElement("div");
+    addButtonContainer.className = "addButtonContainer";
+    domainsList.appendChild(addButtonContainer);
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "addButton ripple_effect";
+    addButton.innerHTML = /*html*/ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--text-primary)"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+            <span>New</span>`;
+    addButtonContainer.appendChild(addButton);
+
+    // Create list container
+    const ul = document.createElement("ul");
+    ul.className = "site-list";
+    domainsList.appendChild(ul);
+
+    return [domainsList, addButton, ul];
+};
+
+const SiteItemUI = (siteData) => {
+    const li = document.createElement("li");
+    li.className = "site-item";
+
+    const siteAnchor = document.createElement("a");
+    siteAnchor.textContent = siteData.site;
+    siteAnchor.setAttribute("href", siteData.site);
+    siteAnchor.setAttribute("target", "_blank");
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.innerHTML = `<svg height="24px" viewBox="0 -960 960 960" width="24px"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>`;
+    deleteBtn.className = "delete-btn";
+
+    deleteBtn.addEventListener("click", async () => {
+        try {
+            if (siteData.pinOnly) {
+            } else {
+            }
+            li.remove();
+            toast("Site successfully deleted");
+        } catch (error) {
+            toast(error.message, "error");
+        }
+    });
+
+    li.appendChild(siteAnchor);
+    li.appendChild(deleteBtn);
+    return li;
+};
+
+export const loadDomains = async () => {
+    const [domainsList, addButton, ul] = createDomainsList();
+    const domains = await fetchDomains();
+    addButton.addEventListener("click", async () => {
+        try {
+            toast("Site successfully added");
+        } catch (error) {
+            toast(error.message, "error");
+        }
+    });
+
+    // If no domains, return early
+    if (domains.length === 0) {
+        return;
+    }
+
+    // Render each domain
+    domains.forEach((site) => {
+        const li = SiteItemUI(site);
+        ul.appendChild(li);
+    });
+
+    const Settings = document.querySelector("#Settings");
+    Settings.after(domainsList);
+};

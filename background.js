@@ -151,3 +151,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 });
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "SecuredDomains") {
+        chrome.storage.sync.get(["domains"], function (result) {
+            const data = result.domains || [];
+            const sites = data.map((item) => {
+                return item.pinOnly
+                    ? { site: item.site, pinOnly: item.pinOnly }
+                    : { site: item.site };
+            });
+            sendResponse({ data: sites });
+        });
+        return true;
+    }
+});
