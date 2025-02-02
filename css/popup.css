@@ -1,0 +1,444 @@
+/* Set the dimensions of the popup */
+body {
+    width: calc(16 * 28px) !important;
+    height: calc(9 * 28px) !important;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+
+header.header {
+    min-height: 64px;
+    height: 64px;
+    max-height: 64px;
+    padding: 0 1rem;
+    margin-bottom: 24px !important;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    box-shadow: none;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0px;
+    z-index: 200;
+    background-image: linear-gradient(90deg, #d399ff, #a3d0ff 50%, #82fdda) !important;
+    transition: background 0.2s linear;
+}
+
+header.header>.navbar--brand {
+    text-decoration: none !important;
+    display: block;
+    position: relative;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAyNCIgaGVpZ2h0PSI1NzYiIGZpbGw9ImN1cnJlbnRDb2xvciIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTQwLjUzNiAzNjYuMjA4Yy0xMy4wMzUgMC0yNC41NDQtMy42NzUtMzQuNTI4LTExLjAyNC02LjgyOC01LjAyNi0xMi4yNi0xMS40NzgtMTYuMy0xOS4zNTgtMy4yOTItNi40MjEuNDUyLTEzLjg3MyA3LjE2Ni0xNi41MTcgNy43MzktMy4wNDcgMTYuMTEyIDEuNjc0IDIwLjk3MyA4LjQyM2EzMy40NiAzMy40NiAwIDAwNC4xNzcgNC43OGM0Ljk5MiA0LjcxNSAxMS4yMzIgNy4wNzIgMTguNzIgNy4wNzIgNi4yNCAwIDExLjU3OS0xLjUyNSAxNi4wMTYtNC41NzYgNC40MzctMy4xODkgNi42NTYtNy41NTcgNi42NTYtMTMuMTA0IDAtNS41NDctMi4xNDktMTAuMDUzLTYuNDQ4LTEzLjUyLTQuMTYtMy42MDUtMTEuNjQ4LTcuNDE5LTIyLjQ2NC0xMS40NGwtOS4xNTItMy4zMjhjLTkuNTY4LTMuMzI4LTE3Ljc0OS04LjM4OS0yNC41NDQtMTUuMTg0LTYuNzk1LTYuOTMzLTEwLjE5Mi0xNS42LTEwLjE5Mi0yNiAwLTcuNzY1IDIuMDEtMTQuODM3IDYuMDMyLTIxLjIxNiA0LjAyMS02LjM3OSA5LjcwNy0xMS4zNzEgMTcuMDU2LTE0Ljk3NiA3LjM0OS0zLjc0NCAxNS42NjktNS42MTYgMjQuOTYtNS42MTYgMTMuNDUxIDAgMjQuMDU5IDMuMTg5IDMxLjgyNCA5LjU2OCA0LjE1NSAzLjMzOSA3LjYxNSA2Ljk5NSAxMC4zOCAxMC45NjkgNC4wMDggNS43NTkuNTQ1IDEzLjIxOC01LjkyNCAxNS45MzYtNy4wNzkgMi45NzQtMTUuMjY2LTEuMTUzLTIxLjMwNC01Ljg5Ny0zLjc0NC0zLjE4OS04LjU5Ny00Ljc4NC0xNC41Ni00Ljc4NC02LjEwMSAwLTExLjE2MyAxLjQ1Ni0xNS4xODQgNC4zNjgtMy44ODMgMi43NzMtNS44MjQgNi40NDgtNS44MjQgMTEuMDI0IDAgNC40MzcgMS44NzIgOC4yNTEgNS42MTYgMTEuNDQgMy43NDQgMy4wNTEgOS45MTUgNi4wMzIgMTguNTEyIDguOTQ0bDkuMzYgMy4xMmMxMi44OTYgNC40MzcgMjIuNzQxIDEwLjMzMSAyOS41MzYgMTcuNjggNi45MzMgNy4yMTEgMTAuNCAxNi43MDkgMTAuNCAyOC40OTYgMCA5LjcwNy0yLjQ5NiAxNy45NTctNy40ODggMjQuNzUyLTQuOTkyIDYuNjU2LTExLjQ0IDExLjY0OC0xOS4zNDQgMTQuOTc2LTcuNzY1IDMuMzI4LTE1LjgwOCA0Ljk5Mi0yNC4xMjggNC45OTJ6TTIyOS43NCAyNDUuMTUyYy00Ljg1MyAwLTkuMDEzLTEuNzMzLTEyLjQ4LTUuMi0zLjQ2Ni0zLjQ2Ny01LjItNy42MjctNS4yLTEyLjQ4IDAtNC44NTMgMS43MzQtOC45NDQgNS4yLTEyLjI3MiAzLjQ2Ny0zLjQ2NyA3LjYyNy01LjIgMTIuNDgtNS4yIDQuODU0IDAgOC45NDQgMS43MzMgMTIuMjcyIDUuMiAzLjQ2NyAzLjMyOCA1LjIgNy40MTkgNS4yIDEyLjI3MiAwIDQuODUzLTEuNzMzIDkuMDEzLTUuMiAxMi40OC0zLjMyOCAzLjQ2Ny03LjQxOCA1LjItMTIuMjcyIDUuMnptLTEzLjcyOCAyNS4yNzJjMC03LjUyNCA2LjEtMTMuNjI0IDEzLjYyNC0xMy42MjQgNy41MjUgMCAxMy42MjQgNi4xIDEzLjYyNCAxMy42MjR2NzguODMyYzAgNy41MjQtNi4wOTkgMTMuNjI0LTEzLjYyNCAxMy42MjQtNy41MjQgMC0xMy42MjQtNi4xLTEzLjYyNC0xMy42MjR2LTc4LjgzMnpNMzE2Ljk5MyAzNjQuNTQ0Yy01LjI2OSAwLTEwLjEyMy0uNzYzLTE0LjU2LTIuMjg4LTQuNDM3LTEuNjY0LTguMDQzLTMuODgzLTEwLjgxNi02LjY1Ni02LjUxNy02LjI0LTkuNzc2LTE1LjExNS05Ljc3Ni0yNi42MjR2LTM5LjYyNGE5LjI1NiA5LjI1NiAwIDAwLTkuMjU2LTkuMjU2IDkuMjU2IDkuMjU2IDAgMDEtOS4yNTYtOS4yNTZ2LTQuNzg0YTkuMjU2IDkuMjU2IDAgMDE5LjI1Ni05LjI1NiA5LjI1NiA5LjI1NiAwIDAwOS4yNTYtOS4yNTZ2LTcuMDcyYzAtNy41MjQgNi4xLTEzLjYyNCAxMy42MjQtMTMuNjI0IDcuNTI0IDAgMTMuNjI0IDYuMSAxMy42MjQgMTMuNjI0djMuMzI4YzAgNy4xOCA1LjgyIDEzIDEzIDEzaDEuMzUyYzYuNDMzIDAgMTEuNjQ4IDUuMjE1IDExLjY0OCAxMS42NDhzLTUuMjE1IDExLjY0OC0xMS42NDggMTEuNjQ4aC0xLjM1MmMtNy4xOCAwLTEzIDUuODItMTMgMTN2MzAuODg4YzAgNS40MDggMS4xNzkgOS4yOTEgMy41MzYgMTEuNjQ4IDEuOTQxIDIuMjE5IDUuMjY5IDMuMzI4IDkuOTg0IDMuMzI4IDIuNjM1IDAgNC43ODQtLjM0NyA2LjQ0OC0xLjA0IDMuMTc1LTEuMjIxIDYuODY0Ljc5MiA2Ljg2NCA0LjE5NHYxMS40OTNjMCA0LjQ2Ny0yLjcwOCA4LjU5My03LjA1OCA5LjYwNC0zLjgyNi44ODktNy43ODMgMS4zMzMtMTEuODcgMS4zMzN6TTQwMy44MSAzNjYuMjA4Yy0xMC41MzggMC0yMC4wMzctMi40MjctMjguNDk2LTcuMjgtOC40NTgtNC44NTMtMTUuMTE0LTExLjUwOS0xOS45NjgtMTkuOTY4LTQuNzE0LTguNTk3LTcuMDcyLTE4LjIzNS03LjA3Mi0yOC45MTIgMC0xMC4xMjMgMi4zNTgtMTkuNDgzIDcuMDcyLTI4LjA4IDQuNzE1LTguNzM2IDExLjIzMi0xNS42NjkgMTkuNTUyLTIwLjhzMTcuNjExLTcuNjk2IDI3Ljg3Mi03LjY5NmMxMC45NTUgMCAyMC4zODQgMi4zNTcgMjguMjg4IDcuMDcyczEzLjg2NyAxMS4xNjMgMTcuODg4IDE5LjM0NGM0LjE2IDguMTgxIDYuMjQgMTcuMjY0IDYuMjQgMjcuMjQ4IDAgNS4yNjgtNC41MzcgOS4xNTItOS44MDUgOS4xNTJoLTQ4LjIzN2MtMTEuNjU2IDAtMjEuMTc4IDExLjgzNi0xMi4yNjIgMTkuMzQ0IDUuNDA4IDQuMjk5IDExLjg1NiA2LjQ0OCAxOS4zNDQgNi40NDggNi4yNCAwIDExLjU3OS0xLjMxNyAxNi4wMTYtMy45NTJhMzIuMTI3IDMyLjEyNyAwIDAwMy4zOTMtMi4zNjJjNS4wNDgtNC4wMjcgMTEuOTI5LTYuNDUyIDE3LjcyNi0zLjYwOCA2LjM2IDMuMTIgOC44NzEgMTEuMTAzIDQuMTc3IDE2LjQwOC0xMC40MDcgMTEuNzYxLTI0LjMxNiAxNy42NDItNDEuNzI4IDE3LjY0MnptMTQuNTc3LTY5LjI2NGM1LjcwMSAwIDEwLjEwMy01LjA5NSA2Ljg0Ny05Ljc3Ni0yLjA4LTMuMzI4LTUuMDYxLTYuMDMyLTguOTQ0LTguMTEyLTMuNzQ0LTIuMjE5LTguMTgxLTMuMzI4LTEzLjMxMi0zLjMyOC02LjUxNyAwLTEyLjEzMyAxLjk0MS0xNi44NDggNS44MjQtNy4xMjUgNS44My0uNTgxIDE1LjM5MiA4LjYyNiAxNS4zOTJoMjMuNjMxek00NzkuOTIxIDIyNy45OTJjMC03Ljc1NCA2LjI4NS0xNC4wNCAxNC4wMzktMTQuMDQgNy43NTUgMCAxNC4wNCA2LjI4NiAxNC4wNCAxNC4wNHY3Ni43NTJjMCAxNy40MDQgMTQuMTA5IDMxLjUxMiAzMS41MTMgMzEuNTEyaDE4LjJjNy4zNTIgMCAxMy4zMTIgNS45NiAxMy4zMTIgMTMuMzEyIDAgNy4zNTItNS45NiAxMy4zMTItMTMuMzEyIDEzLjMxMmgtMzcuNzkyYy0yMi4wOTIgMC00MC0xNy45MDktNDAtNDB2LTk0Ljg4OHpNNjM5LjY2MyAzNjYuMjA4Yy0xMC45NTUgMC0yMC43MzEtMi40MjctMjkuMzI4LTcuMjgtOC41OTctNC45OTItMTUuMzIzLTExLjcxNy0yMC4xNzYtMjAuMTc2LTQuNzE1LTguNTk3LTcuMDcyLTE4LjIzNS03LjA3Mi0yOC45MTIgMC0xMC41MzkgMi4zNTctMjAuMTA3IDcuMDcyLTI4LjcwNCA0Ljg1My04LjU5NyAxMS41NzktMTUuMzIzIDIwLjE3Ni0yMC4xNzYgOC41OTctNC45OTIgMTguMzczLTcuNDg4IDI5LjMyOC03LjQ4OCAxMC44MTYgMCAyMC41MjMgMi40OTYgMjkuMTIgNy40ODggOC41OTcgNC44NTMgMTUuMjUzIDExLjU3OSAxOS45NjggMjAuMTc2IDQuODUzIDguNTk3IDcuMjggMTguMTY1IDcuMjggMjguNzA0IDAgMTAuNjc3LTIuNDI3IDIwLjMxNS03LjI4IDI4LjkxMi00LjcxNSA4LjQ1OS0xMS4zNzEgMTUuMTg0LTE5Ljk2OCAyMC4xNzYtOC41OTcgNC44NTMtMTguMzA0IDcuMjgtMjkuMTIgNy4yOHptMC0yNS4xNjhjNS4yNjkgMCAxMC4xMjMtMS4yNDggMTQuNTYtMy43NDQgNC40MzctMi40OTYgNy45NzMtNi4xMDEgMTAuNjA4LTEwLjgxNiAyLjYzNS00LjcxNSAzLjk1Mi0xMC4yNjEgMy45NTItMTYuNjQgMC02LjI0LTEuMzE3LTExLjcxNy0zLjk1Mi0xNi40MzItMi42MzUtNC43MTUtNi4xNzEtOC4zMi0xMC42MDgtMTAuODE2LTQuNDM3LTIuNDk2LTkuMjkxLTMuNzQ0LTE0LjU2LTMuNzQ0cy0xMC4xMjMgMS4yNDgtMTQuNTYgMy43NDRjLTQuNDM3IDIuNDk2LTguMDQzIDYuMTAxLTEwLjgxNiAxMC44MTYtMi42MzUgNC43MTUtMy45NTIgMTAuMTkyLTMuOTUyIDE2LjQzMiAwIDYuMjQgMS4zMTcgMTEuNzg3IDMuOTUyIDE2LjY0IDIuNzczIDQuNzE1IDYuMzc5IDguMzIgMTAuODE2IDEwLjgxNiA0LjQzNyAyLjQ5NiA5LjI5MSAzLjc0NCAxNC41NiAzLjc0NHpNNzY2LjggMzY2LjIwOGMtMTAuNjc4IDAtMjAuMjQ2LTIuMzU3LTI4LjcwNC03LjA3Mi04LjQ1OS00Ljg1My0xNS4xMTUtMTEuNTc5LTE5Ljk2OC0yMC4xNzYtNC43MTUtOC41OTctNy4wNzItMTguMzA0LTcuMDcyLTI5LjEyIDAtMTAuODE2IDIuMzU3LTIwLjQ1MyA3LjA3Mi0yOC45MTIgNC44NTMtOC41OTcgMTEuNTA5LTE1LjMyMyAxOS45NjgtMjAuMTc2IDguNDU4LTQuODUzIDE4LjAyNi03LjI4IDI4LjcwNC03LjI4IDExLjc4NiAwIDIxLjkwOSAyLjU2NSAzMC4zNjggNy42OTYgNC40MzQgMi42MTcgOC4yMjEgNS44MjUgMTEuMzYgOS42MjQgNC44NTIgNS44NzIgMS4yODcgMTQuMTU3LTUuNzQ0IDE3LjA4Ny02Ljg2NiAyLjg2LTE0LjQ3OC0uODY0LTIwLjY4My00Ljk2NC00LjEwNC0yLjcxMS05LjIwNC00LjA2Ny0xNS4zMDEtNC4wNjctOC4zMiAwLTE1LjE4NCAyLjg0My0yMC41OTIgOC41MjgtNS4yNyA1LjY4NS03LjkwNCAxMy4xNzMtNy45MDQgMjIuNDY0IDAgOS40MjkgMi42MzQgMTYuOTg3IDcuOTA0IDIyLjY3MiA1LjQwOCA1LjY4NSAxMi4yNzIgOC41MjggMjAuNTkyIDguNTI4IDYuNzUxIDAgMTIuNDA2LTEuNzE4IDE2Ljk2Mi01LjE1NCA1LjczNC00LjMyMyAxMy4xMjMtNy41ODIgMTkuNzAzLTQuNzA3IDcuMTA3IDMuMTA2IDEwLjMyNCAxMS43MDkgNS4yMDcgMTcuNTM3YTQ5LjkzMSA0OS45MzEgMCAwMS0xMS43MTIgOS43OTZjLTguNDU5IDUuMTMxLTE4LjUxMiA3LjY5Ni0zMC4xNiA3LjY5NnpNODM2LjExNCAyMjcuNTc2YzAtNy41MjQgNi4xLTEzLjYyNCAxMy42MjQtMTMuNjI0IDcuNTI0IDAgMTMuNjI0IDYuMSAxMy42MjQgMTMuNjI0djY2LjQ2OGExLjAzIDEuMDMgMCAwMDEuNzU4LjcyNWwzMC44MjctMzAuOTk2YTIzLjY1NCAyMy42NTQgMCAwMTE2Ljc3LTYuOTczaDIyLjQ4MWMuNjQ3IDAgMS4xNzIuNTI1IDEuMTcyIDEuMTcyIDAgLjMxNC0uMTI3LjYxNi0uMzUyLjgzN2wtMTYuMTg1IDE1Ljg0OWMtMTMuNzAzIDEzLjQxOS0xNS45NTIgMzQuNjc2LTUuMzYyIDUwLjY2NmwyMy41NTggMzUuNTcxYTEuMjggMS4yOCAwIDAxLTEuMDY2IDEuOTg1aC0xOS40NTRhMjAuNzMyIDIwLjczMiAwIDAxLTE3LjU5NC05Ljc2NmwtMTUuMTkyLTI0LjM3MmMtMy45MTUtNi4yODEtMTIuNjQxLTcuMzE0LTE3LjkxNC0yLjEyMWExMS41NTcgMTEuNTU3IDAgMDAtMy40NDcgOC4yMzN2MTQuNDAyYzAgNy41MjQtNi4xIDEzLjYyNC0xMy42MjQgMTMuNjI0LTcuNTI0IDAtMTMuNjI0LTYuMS0xMy42MjQtMTMuNjI0di0xMjEuNjh6IiBmaWxsPSIjMDAwIi8+PC9zdmc+);
+    background-position: center;
+    background-size: 96px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    min-height: 48px;
+    height: 48px;
+    max-height: 48px;
+    min-width: 116px;
+    width: 116px;
+    max-width: 116px;
+}
+
+.header>#anchor {
+    min-height: 48px;
+    min-width: 48px;
+    max-height: 48px;
+    max-width: 48px;
+    height: 48px;
+    width: 48px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.header>#anchor::after {
+    content: none !important;
+}
+
+.header>#anchor>svg {
+    fill: #202124 !important;
+}
+
+.container {
+    padding: 8px 16px;
+    width: -webkit-fill-available;
+    height: 100%;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-self: center;
+    -ms-flex-item-align: center;
+    align-self: center;
+    row-gap: 8px !important;
+}
+
+.container>.url-container {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -moz-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -moz-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    height: 40px !important;
+    column-gap: 8px !important;
+    border-radius: 24px !important;
+    padding: 0px 12px 0px 8px !important;
+    background-color: #fff !important;
+}
+
+.container>.url-container>.url {
+    border: none !important;
+    margin: 0px !important;
+    height: 32px !important;
+    background-color: transparent !important;
+    color: var(--text-primary);
+    width: 100%;
+    padding: 0px !important;
+}
+
+.container>.url-container>.status-badge {
+    min-width: fit-content;
+    font-size: 12px !important;
+    line-height: 28px !important;
+    border-radius: 24px !important;
+    padding: 0px 12px !important;
+    margin: 0px !important;
+    height: 28px !important;
+}
+
+.container>.url-container>.status-badge:empty {
+    display: none;
+}
+
+.container>.url-container>.status-badge.secure {
+    color: #fff !important;
+    background-color: #2e7d32 !important;
+}
+
+.container>.url-container>.status-badge.insecure {
+    color: #fff !important;
+    background-color: #d32f2f !important;
+}
+
+.container>.password-form {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-align-self: center;
+    -ms-flex-item-align: center;
+    align-self: center;
+    position: relative;
+    row-gap: 8px;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    width: 100%;
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+    height: 56px !important;
+    padding: 0px 12px 0px 8px;
+}
+
+.password-container>.password-input {
+    width: 100%;
+    height: 56px;
+    padding: 20px 48px 6px 56px;
+    border: none;
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: background 0.2s;
+    background-repeat: no-repeat;
+    background-position-x: 16px;
+    background-position-y: 50%;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgLTk2MCA5NjAgOTYwIiB3aWR0aD0iMjQiIGZpbGw9IiM5YWEwYTYiPjxwYXRoIGQ9Ik04MC0yMDB2LTgwaDgwMHY4MEg4MHptNDYtMjQybC01Mi0zMCAzNC02MEg0MHYtNjBoNjhsLTM0LTU4IDUyLTMwIDM0IDU4IDM0LTU4IDUyIDMwLTM0IDU4aDY4djYwaC02OGwzNCA2MC01MiAzMC0zNC02MC0zNCA2MHptMzIwIDBsLTUyLTMwIDM0LTYwaC02OHYtNjBoNjhsLTM0LTU4IDUyLTMwIDM0IDU4IDM0LTU4IDUyIDMwLTM0IDU4aDY4djYwaC02OGwzNCA2MC01MiAzMC0zNC02MC0zNCA2MHptMzIwIDBsLTUyLTMwIDM0LTYwaC02OHYtNjBoNjhsLTM0LTU4IDUyLTMwIDM0IDU4IDM0LTU4IDUyIDMwLTM0IDU4aDY4djYwaC02OGwzNCA2MC01MiAzMC0zNC02MC0zNCA2MHoiLz48L3N2Zz4=);
+}
+
+.password-container>.password-label {
+    position: absolute;
+    left: 64px;
+    top: 16px;
+    color: #5f6368;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.15s cubic-bezier(0.4, 0, 0.2, 1), font-weight 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left top;
+    pointer-events: none;
+}
+
+.password-input:focus~.password-label,
+.password-input:not(:placeholder-shown)~.password-label {
+    transform: translateY(-8px) scale(0.75);
+    color: #6200ee;
+    font-weight: 600;
+}
+
+.password-container>.password-input:focus {
+    outline: none;
+    caret-color: #6200ee;
+}
+
+.password-container>.password-input:disabled {
+    pointer-events: none;
+}
+
+.password-container::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 12px;
+    bottom: 0;
+    width: calc(100% - 20px);
+    height: 1.2px;
+    background-color: rgba(0, 0, 0, 0.42);
+    transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1), height 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.password-container:has(.password-input:focus)::after,
+.password-container:has(.password-input:active)::after,
+.password-container:has(.password-input:not(:placeholder-shown))::after {
+    height: 2px;
+    background-color: #6200ee;
+}
+
+.password-input::placeholder {
+    color: transparent;
+}
+
+.show-hide-button {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 40px !important;
+    width: 40px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #5f6368;
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.show-hide-button:active,
+.show-hide-button:hover {
+    color: #6200ee;
+}
+
+.show-hide-button:active {
+    transform: translateY(calc(-50% + 1px));
+}
+
+.show-hide-button:disabled {
+    pointer-events: none;
+    opacity: 0.38;
+}
+
+.password-input:focus~.show-hide-button,
+.password-input:not(:placeholder-shown)~.show-hide-button {
+    color: #6200ee;
+}
+
+.requirement {
+    font-size: 0.75rem;
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: 4px;
+    padding-left: 16px;
+}
+
+.pin-option {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -moz-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -moz-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    height: 32px;
+    column-gap: 8px;
+    padding: 0px 12px 0px 8px;
+    background-color: transparent;
+}
+
+.pin-option>.set-button {
+    background-color: #191C1C;
+    color: #FAFDFC;
+    border: none;
+    padding: 0px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 0px 6px 6px 0px;
+    border-radius: 24px;
+    line-height: 32px;
+    height: 32px;
+}
+
+.material-checkbox {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+
+.material-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    border: 2px solid #757575;
+    border-radius: 4px;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.checkmark::after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 1px;
+    width: 4px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.material-checkbox>input[type="checkbox"]:checked~.checkmark {
+    background-color: #6200ee;
+    border-color: #6200ee;
+}
+
+.material-checkbox>input[type="checkbox"]:checked~.checkmark::after {
+    display: block;
+}
+
+.material-checkbox:hover>input[type="checkbox"]~.checkmark {
+    border-color: #6200ee;
+}
+
+.material-checkbox>input[type="checkbox"]:focus~.checkmark {
+    box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.2);
+}
+
+.label-text {
+    color: var(--text-primary);
+    opacity: 0.80;
+}
+
+/* Theme-specific styles */
+[data-theme="dark"] .container {
+    -webkit-box-shadow: 0px 0px 4.0px hsl(0deg 0% 0% / 0.38);
+    box-shadow: 0px 0px 4.0px hsl(0deg 0% 0% / 0.38);
+}
+
+[data-theme="dark"] .container>.url-container {
+    background-color: #1a1a1c !important;
+}
+
+[data-theme="dark"] .password-container>.password-input {
+    color: var(--text-primary);
+    background-color: #101114 !important;
+}
+
+[data-theme="dark"] .pin-option>.set-button {
+    background-color: #FAFDFC;
+    color: #191C1C;
+}
+
+.requirement {
+    color: #6b7280;
+    font-size: 12px;
+    padding: 4px 8px;
+    margin-top: -8px;
+}

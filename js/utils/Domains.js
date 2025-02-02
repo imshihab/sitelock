@@ -54,6 +54,7 @@ export const showHidePassword = (dialog, inputSelector) => {
     });
     const passIconField = dialog.querySelector(".passIconField");
     passIconField.appendChild(showHideButton);
+    return showHideButton;
 };
 
 const createNewDialog = () => {
@@ -321,7 +322,7 @@ export const removeDomain = async (siteData, li) => {
         }
     });
 
-    authForm?.addEventListener("submit", async (e) => {
+    authForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const password = Password?.value;
         const pin = Array.from(pinBoxes)
@@ -350,7 +351,7 @@ export const removeDomain = async (siteData, li) => {
     Password?.addEventListener("keyup", (event) => {
         if (
             Storage.get(CONSTANT.Auto_Confirm) &&
-            Password?.value.length >= siteData.range
+            event.target.value.length >= siteData.range
         ) {
             const event = new Event("submit");
             authForm.dispatchEvent(event);

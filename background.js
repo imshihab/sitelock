@@ -313,3 +313,55 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 });
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "checkSite") {
+        chrome.storage.sync.get(["domains"], function (result) {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const tab = tabs[0];
+
+                if (
+                    !tab?.url ||
+                    tab.url.startsWith("chrome://") ||
+                    tab.url.startsWith("edge://") ||
+                    tab.url.startsWith("chrome-extension://")
+                ) {
+                    sendResponse({
+                        status: {
+                            code: "fail",
+                            msg: "Restricted URL or no URL available.",
+                        },
+                    });
+                    return;
+                }
+
+                try {
+                    const hostname = new URL(tab.url).origin + "/";
+                    const domain = result.domains?.find(
+                        (item) => item.site === hostname
+                    );
+
+                    if (domain?.pass || domain?.pinOnly) {
+                        sendResponse({
+                            status: {
+                                code: "correct",
+                                site: hostname,
+                            },
+                        });
+                    } else {
+                        sendResponse({
+                            status: {
+                                code: "error",
+                                site: hostname,
+                            },
+                        });
+                    }
+                } catch (error) {
+                    sendResponse({
+                        status: { code: "fail", msg: "Invalid URL format." },
+                    });
+                }
+            });
+        });
+        return true;
+    }
+});
