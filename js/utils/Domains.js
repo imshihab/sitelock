@@ -220,66 +220,6 @@ const createDeleteDialog = async (siteData, li) => {
             toast("Cancelled by user", "error");
         }
     });
-
-    const handleDeleteResponse = (response) => {
-        if (response.status === "success") {
-            overlay.remove();
-            li.remove();
-            toast("Site successfully deleted");
-        } else {
-            overlay.remove();
-            toast(response.msg, "error");
-        }
-    };
-
-    const passkeyBtn = overlay.querySelector("#passkeyBtn");
-    passkeyBtn?.addEventListener("click", async () => {
-        try {
-            const challenge = generateRandomChallenge();
-            const authOptions = {
-                challenge,
-                rpId: window.location.hostname,
-                userVerification: "required",
-                timeout: 60000,
-            };
-
-            await navigator.credentials.get({ publicKey: authOptions });
-
-            chrome.runtime.sendMessage(
-                { type: "deleteDomainPasskey", data: { site: siteData.site } },
-                handleDeleteResponse
-            );
-        } catch (error) {
-            toast(error, "error");
-        }
-    });
-    const authForm = overlay.querySelector("#authForm");
-    authForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const pinBoxes = overlay?.querySelectorAll(".pin-box");
-        const password = overlay?.querySelector("#password")?.value;
-        const pin = Array.from(pinBoxes)
-            .map((box) => box.value)
-            .join("");
-
-        try {
-            chrome.runtime.sendMessage(
-                {
-                    type: "deleteDomain",
-                    data: {
-                        site: siteData.site,
-                        password,
-                        pin,
-                        IsPinOnly: siteData.pinOnly,
-                    },
-                },
-                handleDeleteResponse
-            );
-        } catch (error) {
-            toast(error, "error");
-            overlay.remove();
-        }
-    });
     return overlay;
 };
 
@@ -343,8 +283,89 @@ export const removeDomain = async (siteData, li) => {
     const overlay = await createDeleteDialog(siteData, li);
     document.body.appendChild(overlay);
 
+    const authForm = overlay.querySelector("#authForm");
     const pinBoxes = overlay.querySelectorAll(".pin-box");
     const Password = overlay.querySelector("#password");
+    const passkeyBtn = overlay.querySelector("#passkeyBtn");
     pinBoxes[0]?.focus();
     Password?.focus();
+
+    const handleDeleteResponse = (response) => {
+        if (response.status === "success") {
+            overlay.remove();
+            li.remove();
+            toast("Site successfully deleted");
+        } else {
+            toast(response.msg, "error");
+        }
+    };
+
+    passkeyBtn?.addEventListener("click", async () => {
+        try {
+            const challenge = generateRandomChallenge();
+            const authOptions = {
+                challenge,
+                rpId: window.location.hostname,
+                userVerification: "required",
+                timeout: 60000,
+            };
+
+            await navigator.credentials.get({ publicKey: authOptions });
+
+            chrome.runtime.sendMessage(
+                { type: "deleteDomainPasskey", data: { site: siteData.site } },
+                handleDeleteResponse
+            );
+        } catch (error) {
+            toast(error, "error");
+        }
+    });
+
+    authForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const password = Password?.value;
+        const pin = Array.from(pinBoxes)
+            .map((box) => box.value)
+            .join("");
+
+        try {
+            chrome.runtime.sendMessage(
+                {
+                    type: "deleteDomain",
+                    data: {
+                        site: siteData.site,
+                        password,
+                        pin,
+                        IsPinOnly: siteData.pinOnly,
+                    },
+                },
+                handleDeleteResponse
+            );
+        } catch (error) {
+            toast(error, "error");
+            overlay.remove();
+        }
+    });
+
+    Password?.addEventListener("keyup", (event) => {
+        if (
+            Storage.get(CONSTANT.Auto_Confirm) &&
+            Password?.value.length >= siteData.range
+        ) {
+            const event = new Event("submit");
+            authForm.dispatchEvent(event);
+        }
+    });
+
+    pinBoxes?.forEach((box) => {
+        box?.addEventListener("input", () => {
+            const pin = Array.from(pinBoxes)
+                .map((box) => box.value)
+                .join("");
+            if (Storage.get(CONSTANT.Auto_Confirm) && pin.length === 4) {
+                const event = new Event("submit");
+                authForm.dispatchEvent(event);
+            }
+        });
+    });
 };

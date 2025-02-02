@@ -163,7 +163,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             const sites = data.map((item) => {
                 return item.pinOnly
                     ? { site: item.site, pinOnly: item.pinOnly }
-                    : { site: item.site };
+                    : { site: item.site, range: item.pass?.length };
             });
             sendResponse({ data: sites });
         });

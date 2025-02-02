@@ -733,7 +733,6 @@ export const loadDomains = async () => {
     if (domains.length === 0) {
         return;
     }
-    console.log(domains);
 
     // Render each domain
     domains.forEach((site) => {
