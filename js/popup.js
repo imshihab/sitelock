@@ -164,7 +164,7 @@ BoxContainer.appendChild(UrlContainer);
         form.addEventListener("submit", function (event) {
             event.preventDefault();
             const password = passwordInput.value;
-            const pinOnly = document.getElementById("pinOnlyCheckbox");
+            const pinOnly = document.getElementById("pinOnlyCheckbox").checked;
             chrome.runtime.sendMessage(
                 {
                     type: "addDomain",
