@@ -365,3 +365,120 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 });
+
+const authenticatedSites = new Set();
+const tabsPerSite = new Map();
+
+function isAuthenticated(_url) {
+    return authenticatedSites.has(toDomain(_url));
+}
+
+function addAuthenticatedSite(_url) {
+    const site = toDomain(_url);
+    authenticatedSites.add(site);
+    if (!tabsPerSite.has(site)) {
+        tabsPerSite.set(site, 1);
+    } else {
+        tabsPerSite.set(site, tabsPerSite.get(site) + 1);
+    }
+}
+
+function removeAuthenticatedSite(_url) {
+    const site = toDomain(_url);
+    authenticatedSites.delete(site);
+    tabsPerSite.delete(site);
+}
+
+chrome.webNavigation.onBeforeNavigate.addListener(
+    async (details) => {
+        const url = new URL(details.url);
+        const site = url.origin + "/";
+        if (isAuthenticated(site)) {
+            return;
+        }
+        chrome.storage.sync.get(["domains"], async (result) => {
+            const domain = result.domains?.find((item) => item.site === site);
+            if (domain?.pass || domain?.pinOnly) {
+                const _PINONLY = domain.pinOnly ? "&pinOnly=true" : "";
+                const authUrl =
+                    chrome.runtime.getURL("auth.html") +
+                    "?redirect=" +
+                    encodeURIComponent(details.url) +
+                    _PINONLY;
+                chrome.tabs.update(details.tabId, { url: authUrl });
+            }
+        });
+    },
+    { url: [{ schemes: ["http", "https"] }] }
+);
+
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+    if (message.type === "PasskeyAuthenticate") {
+        const tabId = sender.tab.id;
+        addAuthenticatedSite(message.site);
+        chrome.tabs.update(tabId, { url: message.redirectUrl });
+        return true;
+    }
+});
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "authenticate") {
+        (async () => {
+            const tabId = sender.tab.id;
+            chrome.storage.sync.get(["domains", "goatPIN"], function (result) {
+                const domain = result.domains?.find(
+                    (item) => item.site === message.site
+                );
+
+                if (!domain) {
+                    chrome.tabs.update(tabId, { url: message.redirectUrl });
+                    return;
+                }
+
+                if (message.data.pinOnly) {
+                    if (message.data.pin === result.goatPIN) {
+                        addAuthenticatedSite(message.site);
+                        chrome.tabs.update(tabId, { url: message.redirectUrl });
+                    } else {
+                        sendResponse({
+                            status: "fail",
+                            msg: "PIN does not match.",
+                        });
+                    }
+                    return;
+                }
+
+                if (message.data.password === domain.pass) {
+                    addAuthenticatedSite(message.site);
+                    chrome.tabs.update(tabId, { url: message.redirectUrl });
+                } else {
+                    sendResponse({
+                        status: "fail",
+                        msg: "Password does not match.",
+                    });
+                }
+            });
+        })();
+        return true;
+    }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+    chrome.tabs.query({}, (tabs) => {
+        const siteCounts = new Map();
+
+        tabs.forEach((tab) => {
+            const site = toDomain(tab.url);
+            if (site) {
+                siteCounts.set(site, (siteCounts.get(site) || 0) + 1);
+            }
+        });
+
+        for (const site of authenticatedSites) {
+            if (!siteCounts.has(site)) {
+                removeAuthenticatedSite(site);
+            } else {
+                tabsPerSite.set(site, siteCounts.get(site));
+            }
+        }
+    });
+});
