@@ -676,17 +676,25 @@ const createDomainsList = () => {
 
     const addButton = document.createElement("button");
     addButton.type = "button";
-    addButton.className = "addButton ripple_effect";
+    addButton.className = "addButton";
     addButton.innerHTML = /*html*/ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--text-primary)"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
             <span>New</span>`;
     addButtonContainer.appendChild(addButton);
+
+    // Create the "Reload" button
+    const reloadButton = document.createElement("button");
+    reloadButton.type = "button";
+    reloadButton.className = "reloadButton";
+    reloadButton.innerHTML = /*html*/ `<svg viewBox="0 0 24 24" height="24px" width="24px" fill="var(--text-primary)" xmlns="http://www.w3.org/2000/svg"><path d="M2 12C2 16.97 6.03 21 11 21C13.39 21 15.68 20.06 17.4 18.4L15.9 16.9C14.63 18.25 12.86 19 11 19C4.76 19 1.64 11.46 6.05 7.05C10.46 2.64 18 5.77 18 12H15L19 16H19.1L23 12H20C20 7.03 15.97 3 11 3C6.03 3 2 7.03 2 12Z"/></svg>
+            <span>Reload</span>`;
+    addButtonContainer.appendChild(reloadButton);
 
     // Create list container
     const ul = document.createElement("ul");
     ul.className = "site-list";
     domainsList.appendChild(ul);
 
-    return [domainsList, addButton, ul];
+    return [domainsList, addButton, ul, reloadButton];
 };
 
 export const SiteItemUI = (siteData) => {
@@ -715,9 +723,20 @@ export const SiteItemUI = (siteData) => {
     return li;
 };
 
-export const loadDomains = async () => {
-    const [domainsList, addButton, ul] = createDomainsList();
+const SHOWDomains = async (ul) => {
     const domains = await fetchDomains();
+    ul.innerHTML = "";
+    if (domains.length === 0) {
+        return;
+    }
+    domains.forEach((site) => {
+        const li = SiteItemUI(site);
+        ul.appendChild(li);
+    });
+};
+
+export const loadDomains = async () => {
+    const [domainsList, addButton, ul, reloadButton] = createDomainsList();
     addButton.addEventListener("click", async () => {
         try {
             await addDomain();
@@ -728,15 +747,8 @@ export const loadDomains = async () => {
 
     const Settings = document.querySelector("#Settings");
     Settings.after(domainsList);
-
-    // If no domains, return early
-    if (domains.length === 0) {
-        return;
-    }
-
-    // Render each domain
-    domains.forEach((site) => {
-        const li = SiteItemUI(site);
-        ul.appendChild(li);
+    SHOWDomains(ul);
+    reloadButton.addEventListener("click", () => {
+        SHOWDomains(ul);
     });
 };
