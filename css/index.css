@@ -449,9 +449,20 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
 
 .site-list {
     list-style: none;
-    padding: 0;
+    padding: 12px 0px !important;
     margin: 0;
+    background-color: #fff;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
+
+[data-theme="dark"] .site-list {
+    background-color: #101114;
+}
+
 
 .site-list:empty::after {
     content: "No protected sites";
@@ -479,41 +490,46 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
     -webkit-align-items: center;
     -ms-flex-align: center;
     align-items: center;
-    padding: 0px 16px;
-    background: #ffffff;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    padding: 12px 16px;
+    transition: background-color 0.2s ease;
 }
 
-[data-theme="dark"] .site-item {
-    background: #202124;
+.site-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-grow: 1;
+    gap: 16px !important;
 }
 
-/* Last child no margin */
-.site-list>.site-item:last-child {
-    margin-bottom: 0;
+.favicon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
 }
 
-.site-item a {
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    font-weight: 400;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 16px;
+.site-info a {
+    text-decoration: none;
+    color: #1a73e8;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+}
+
+.site-info a:hover {
+    text-decoration: underline;
 }
 
 
 .delete-btn {
     background-color: transparent;
     color: #dc3545;
-    border: 1px solid #dc3545;
+    border: none !important;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    height: 40px !important;
-    width: 40px !important;
+    transition: color 0.2s ease, background 0.2s ease;
+    height: 32px !important;
+    width: 32px !important;
     display: flex;
     align-items: center;
     justify-content: center;

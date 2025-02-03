@@ -161,9 +161,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.storage.sync.get(["domains"], function (result) {
             const data = result.domains || [];
             const sites = data.map((item) => {
-                return item.pinOnly
-                    ? { site: item.site, pinOnly: item.pinOnly }
-                    : { site: item.site, range: item.pass?.length };
+                return {
+                    site: item.site,
+                    pinOnly: item.pinOnly || false,
+                    range: item.pass?.length || 0,
+                    icon: item.icon,
+                };
             });
             sendResponse({ data: sites });
         });
@@ -391,6 +394,7 @@ function removeAuthenticatedSite(_url) {
 
 chrome.webNavigation.onBeforeNavigate.addListener(
     async (details) => {
+        if (details.frameId !== 0) return;
         const url = new URL(details.url);
         const site = url.origin + "/";
         if (isAuthenticated(site)) {
@@ -411,6 +415,49 @@ chrome.webNavigation.onBeforeNavigate.addListener(
     },
     { url: [{ schemes: ["http", "https"] }] }
 );
+
+// Helper function to fetch favicon
+async function fetchFavicon(tabId) {
+    return new Promise((resolve) => {
+        chrome.scripting.executeScript(
+            {
+                target: { tabId },
+                func: () => {
+                    const faviconLink =
+                        document.querySelector("link[rel*='icon']")?.href;
+                    return faviconLink || null;
+                },
+            },
+            (results) => {
+                if (results && results[0]?.result) {
+                    resolve(results[0].result);
+                } else {
+                    resolve(null);
+                }
+            }
+        );
+    });
+}
+
+chrome.webNavigation.onCompleted.addListener(async (details) => {
+    if (details.frameId !== 0) return;
+    const url = new URL(details.url);
+    const site = url.origin + "/";
+    if (isAuthenticated(site)) {
+        chrome.storage.sync.get(["domains"], async (result) => {
+            const domains = result.domains || [];
+            const domainEntry = domains.find((item) => item.site === site);
+            if (domainEntry && domainEntry.favicon) {
+                return;
+            }
+            const favicon = await fetchFavicon(details.tabId);
+            if (favicon) {
+                domainEntry.icon = favicon;
+                chrome.storage.sync.set({ domains });
+            }
+        });
+    }
+});
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     if (message.type === "PasskeyAuthenticate") {

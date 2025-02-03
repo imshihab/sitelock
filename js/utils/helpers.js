@@ -697,9 +697,19 @@ const createDomainsList = () => {
     return [domainsList, addButton, ul, reloadButton];
 };
 
+const webICON = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHdpZHRoPSIyNCIgZmlsbD0iIzlhYTBhNiI+PHBhdGggZD0iTTExLjk5IDJDNi40NyAyIDIgNi40OCAyIDEyczQuNDcgMTAgOS45OSAxMEMxNy41MiAyMiAyMiAxNy41MiAyMiAxMlMxNy41MiAyIDExLjk5IDJ6bTYuOTMgNmgtMi45NWExNS42NSAxNS42NSAwIDAwLTEuMzgtMy41NkE4LjAzIDguMDMgMCAwMTE4LjkyIDh6TTEyIDQuMDRjLjgzIDEuMiAxLjQ4IDIuNTMgMS45MSAzLjk2aC0zLjgyYy40My0xLjQzIDEuMDgtMi43NiAxLjkxLTMuOTZ6TTQuMjYgMTRDNC4xIDEzLjM2IDQgMTIuNjkgNCAxMnMuMS0xLjM2LjI2LTJoMy4zOGMtLjA4LjY2LS4xNCAxLjMyLS4xNCAyIDAgLjY4LjA2IDEuMzQuMTQgMkg0LjI2em0uODIgMmgyLjk1Yy4zMiAxLjI1Ljc4IDIuNDUgMS4zOCAzLjU2QTcuOTg3IDcuOTg3IDAgMDE1LjA4IDE2em0yLjk1LThINS4wOGE3Ljk4NyA3Ljk4NyAwIDAxNC4zMy0zLjU2QTE1LjY1IDE1LjY1IDAgMDA4LjAzIDh6TTEyIDE5Ljk2Yy0uODMtMS4yLTEuNDgtMi41My0xLjkxLTMuOTZoMy44MmMtLjQzIDEuNDMtMS4wOCAyLjc2LTEuOTEgMy45NnpNMTQuMzQgMTRIOS42NmMtLjA5LS42Ni0uMTYtMS4zMi0uMTYtMiAwLS42OC4wNy0xLjM1LjE2LTJoNC42OGMuMDkuNjUuMTYgMS4zMi4xNiAyIDAgLjY4LS4wNyAxLjM0LS4xNiAyem0uMjUgNS41NmMuNi0xLjExIDEuMDYtMi4zMSAxLjM4LTMuNTZoMi45NWE4LjAzIDguMDMgMCAwMS00LjMzIDMuNTZ6TTE2LjM2IDE0Yy4wOC0uNjYuMTQtMS4zMi4xNC0yIDAtLjY4LS4wNi0xLjM0LS4xNC0yaDMuMzhjLjE2LjY0LjI2IDEuMzEuMjYgMnMtLjEgMS4zNi0uMjYgMmgtMy4zOHoiLz48L3N2Zz4=`;
+
 export const SiteItemUI = (siteData) => {
     const li = document.createElement("li");
     li.className = "site-item";
+    const siteDiv = document.createElement("div");
+    siteDiv.className = "site-info";
+    const favicon = document.createElement("img");
+    favicon.className = "favicon";
+    favicon.src = siteData.icon || webICON;
+    favicon.alt = "Favicon";
+    favicon.style.width = "24px";
+    favicon.style.height = "24px";
 
     const siteAnchor = document.createElement("a");
     siteAnchor.textContent = siteData.site;
@@ -717,8 +727,9 @@ export const SiteItemUI = (siteData) => {
             toast(error.message, "error");
         }
     });
-
-    li.appendChild(siteAnchor);
+    siteDiv.appendChild(favicon);
+    siteDiv.appendChild(siteAnchor);
+    li.appendChild(siteDiv);
     li.appendChild(deleteBtn);
     return li;
 };
