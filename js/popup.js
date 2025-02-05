@@ -1,7 +1,7 @@
 import * as theme from "./utils/theme.js";
 import { checkFirstInstall, CONSTANT } from "./utils/helpers.js";
 import Storage from "./utils/esmls.js";
-import { showHidePassword } from "./utils/Domains.js";
+import { showHidePassword } from "./utils/UI_Helper.js";
 
 const BoxContainer = document.querySelector("div#BoxContainer");
 const UrlContainer = document.createElement("div");

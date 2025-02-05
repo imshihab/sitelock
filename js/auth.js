@@ -1,8 +1,8 @@
 import * as theme from "./utils/theme.js";
 import toast from "./utils/toast.js";
 import Storage from "./utils/esmls.js";
-import { PINInputsFunction, CONSTANT } from "./utils/helpers.js";
-import { showHidePassword } from "./utils/Domains.js";
+import { CONSTANT } from "./utils/helpers.js";
+import { PINInputsFunction, showHidePassword } from "./utils/UI_Helper.js";
 
 (async () => {
     const urlParams = new URLSearchParams(window.location.search);

@@ -1,6 +1,7 @@
 import Storage from "./esmls.js";
 import toast from "./toast.js";
 import { addDomain, removeDomain } from "./Domains.js";
+import { PINInputsFunction } from "./UI_Helper.js";
 
 export const CONSTANT = {
     FIRST_ATTEMPT: "FIRST_ATTEMPT",
@@ -49,33 +50,6 @@ const saveCredential = (credentialData) => {
 
 const redirectUrl = () =>
     new URLSearchParams(window.location.search).get("redirect");
-
-export const PINInputsFunction = () => {
-    const container = document.createElement("div");
-    container.className = "pin-inputs";
-    container.innerHTML = /*html*/ `
-            <input type="text" maxlength="1" pattern="[0-9]" class="pin-box" inputmode="numeric" required="">
-            <input type="text" maxlength="1" pattern="[0-9]" class="pin-box" inputmode="numeric" required="">
-            <input type="text" maxlength="1" pattern="[0-9]" class="pin-box" inputmode="numeric" required="">
-            <input type="text" maxlength="1" pattern="[0-9]" class="pin-box" inputmode="numeric" required="">`;
-
-    const pinBoxes = container.querySelectorAll(".pin-box");
-    pinBoxes.forEach((box, index) => {
-        box.addEventListener("input", (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, "");
-            if (e.target.value.length === 1 && index < pinBoxes.length - 1) {
-                pinBoxes[index + 1].focus();
-            }
-        });
-
-        box.addEventListener("keydown", (e) => {
-            if (e.key === "Backspace" && e.target.value === "" && index > 0) {
-                pinBoxes[index - 1].focus();
-            }
-        });
-    });
-    return container;
-};
 
 export const SetUpPIN = () => {
     const container = document.createElement("div");
