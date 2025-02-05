@@ -350,6 +350,41 @@ header.header>.theme-switcher>.theme-option>.theme-option-text {
     cursor: not-allowed;
 }
 
+/* Material Select Dropdown Styling */
+.select-container {
+    position: relative;
+}
+
+.material-select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #212121;
+    background-color: #ffffff;
+    border: 1px solid #c7c7c7;
+    border-radius: 8px;
+    box-shadow: none;
+    appearance: none;
+    transition: border-color 0.3s;
+}
+
+.material-select:focus {
+    border-color: #6200ea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.2);
+}
+
+.setting-item[data-active="false"] {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+
+/* Arrow for Select Box */
+.material-select::-ms-expand {
+    display: none;
+}
+
 .overlay-container {
     position: fixed;
     top: 0;

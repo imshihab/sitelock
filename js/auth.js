@@ -117,7 +117,8 @@ import { PINInputsFunction, showHidePassword } from "./utils/UI_Helper.js";
         });
 
         if (Storage.get(CONSTANT.AUTO_LOGIN_KEY, false)) {
-            await PasskeyAuthenticate(500);
+            const delay = Storage.get(CONSTANT.AUTO_PASSKET_DELAY) || "0";
+            await PasskeyAuthenticate(delay);
         }
     }
 

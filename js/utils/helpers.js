@@ -7,6 +7,7 @@ export const CONSTANT = {
     FIRST_ATTEMPT: "FIRST_ATTEMPT",
     STORAGE_KEY: "passkey_credentials",
     AUTO_LOGIN_KEY: "passkey_auto_login",
+    AUTO_PASSKET_DELAY: "passkey_auto_login_delay",
     IS_PIN_Only: "IS_PIN_Only",
     Auto_Confirm: "IS_Auto_Confirm",
 };
@@ -292,6 +293,54 @@ const authenticateUserPIN = (callback, noCancel) => {
     }, noCancel);
 };
 
+const WaitAutoPassKey = () => {
+    const WaitAutoPasskeyItem = document.createElement("div");
+    WaitAutoPasskeyItem.className = "setting-item";
+    WaitAutoPasskeyItem.id = "WAIT__AUTO__PASSKEY";
+    WaitAutoPasskeyItem.innerHTML = /*html*/ `
+        <div class="setting-label">
+            <span class="setting-title">
+                Auto Passkey Login Delay
+            </span>
+            <span class="setting-description">
+                Set the delay duration before automatically logging in with a passkey.
+            </span>
+        </div>
+        <div class="select-container">
+            <select id="Auto_Passkey_delay" class="material-select">
+                <option value="0">0s</option>
+                <option value="300">0.3s</option>
+                <option value="500">0.5s</option>
+                <option value="700">0.7s</option>
+                <option value="1000">1s</option>
+                <option value="1500">1.5s</option>
+                <option value="2000">2s</option>
+                <option value="2500">2.5s</option>
+                <option value="3000">3s</option>
+            </select>
+        </div>`;
+
+    const Select = WaitAutoPasskeyItem.querySelector("#Auto_Passkey_delay");
+
+    const isAutoLogin = Storage.get(CONSTANT.AUTO_LOGIN_KEY) === true;
+    if (!isAutoLogin) {
+        WaitAutoPasskeyItem.setAttribute("data-active", false);
+    }
+
+    const savedDelay = Storage.get(CONSTANT.AUTO_PASSKET_DELAY) || "0";
+    Select.value = savedDelay;
+
+    Select.addEventListener("change", (e) => {
+        Storage.set(CONSTANT.AUTO_PASSKET_DELAY, e.target.value);
+    });
+
+    Storage.onChange(CONSTANT.AUTO_PASSKET_DELAY, (newValue) => {
+        Select.value = newValue;
+    });
+
+    return WaitAutoPasskeyItem;
+};
+
 const AutoPassKey = () => {
     const AutoPasskeyItem = document.createElement("div");
     AutoPasskeyItem.className = "setting-item";
@@ -335,6 +384,7 @@ export const SetUpPasskeyLogin = async () => {
 
     const checkBox = document.querySelector("#Passkey_Login");
     const AutoPassKeySetting = AutoPassKey();
+    const AutoPassKeyDelay = WaitAutoPassKey();
     try {
         const response = await chrome.runtime.sendMessage({
             action: "getPasskeyStatus",
@@ -344,7 +394,7 @@ export const SetUpPasskeyLogin = async () => {
         Storage.set("passkeyStatus", hasPasskey && isEnabled);
         checkBox.checked = hasPasskey && isEnabled;
         if (hasPasskey && isEnabled)
-            SettingItemPasskeyLogin.after(AutoPassKeySetting);
+            SettingItemPasskeyLogin.after(AutoPassKeySetting, AutoPassKeyDelay);
     } catch (error) {
         toast(`Failed to get passkey status: ${error}`);
         Storage.set("passkeyStatus", false);
@@ -397,7 +447,8 @@ export const SetUpPasskeyLogin = async () => {
                                     Storage.set("passkeyStatus", true);
                                     checkBox.checked = true;
                                     SettingItemPasskeyLogin.after(
-                                        AutoPassKeySetting
+                                        AutoPassKeySetting,
+                                        AutoPassKeyDelay
                                     );
                                     toast("Passkey created successfully");
                                     if (redirectUrl()) {
@@ -466,14 +517,19 @@ export const SetUpPasskeyLogin = async () => {
     Storage.onChange("passkeyStatus", (val) => {
         checkBox.checked = val;
         if (val === true) {
-            SettingItemPasskeyLogin.after(AutoPassKeySetting);
+            SettingItemPasskeyLogin.after(AutoPassKeySetting, AutoPassKeyDelay);
         } else {
             AutoPassKeySetting.remove();
+            AutoPassKeyDelay.remove();
         }
     });
     Storage.onChange(CONSTANT.AUTO_LOGIN_KEY, (val) => {
         const checkBox = AutoPassKeySetting.querySelector("#Auto_Passkey");
         checkBox.checked = val;
+        const autoPasskeySelect = document.querySelector(
+            "#WAIT__AUTO__PASSKEY"
+        );
+        autoPasskeySelect.setAttribute("data-active", val);
     });
 };
 
