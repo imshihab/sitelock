@@ -70,6 +70,26 @@ import { PINInputsFunction, showHidePassword } from "./utils/UI_Helper.js";
         });
     }
 
+    authForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const password = document.querySelector("#authSecurityCode")?.value;
+        const pinBoxes = document.querySelectorAll(".pin-box");
+        const pin = Array.from(pinBoxes)
+            .map((box) => box.value)
+            .join("");
+
+        const result = await chrome.runtime.sendMessage({
+            type: "authenticate",
+            site,
+            redirectUrl,
+            data: { password, pin, pinOnly },
+        });
+        if (result.status === "fail") {
+            toast(`Authentication failed: ${result.msg}`, "error");
+            return;
+        }
+    });
+
     if (isEnabled) {
         const passkeyBtn = document.createElement("button");
         passkeyBtn.type = "button";
@@ -137,24 +157,4 @@ import { PINInputsFunction, showHidePassword } from "./utils/UI_Helper.js";
             await PasskeyAuthenticate(delay);
         }
     }
-
-    authForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const password = document.querySelector("#authSecurityCode")?.value;
-        const pinBoxes = document.querySelectorAll(".pin-box");
-        const pin = Array.from(pinBoxes)
-            .map((box) => box.value)
-            .join("");
-
-        const result = await chrome.runtime.sendMessage({
-            type: "authenticate",
-            site,
-            redirectUrl,
-            data: { password, pin, pinOnly },
-        });
-        if (result.status === "fail") {
-            toast(`Authentication failed: ${result.msg}`, "error");
-            return;
-        }
-    });
 })();
