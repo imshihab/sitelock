@@ -328,14 +328,27 @@ const WaitAutoPassKey = () => {
     }
 
     const savedDelay = Storage.get(CONSTANT.AUTO_PASSKET_DELAY) || "0";
-    Select.value = savedDelay;
+const validValuesSet = new Set([
+    "0",
+    "300",
+    "500",
+    "700",
+    "1000",
+    "1500",
+    "2000",
+    "2500",
+    "3000",
+]);
+
+Select.value = validValuesSet.has(savedDelay) ? savedDelay : "0";
+    Storage.set(CONSTANT.AUTO_PASSKET_DELAY, Select.value);
 
     Select.addEventListener("change", (e) => {
         Storage.set(CONSTANT.AUTO_PASSKET_DELAY, e.target.value);
     });
 
     Storage.onChange(CONSTANT.AUTO_PASSKET_DELAY, (newValue) => {
-        Select.value = newValue;
+        Select.value = validValuesSet.has(newValue) ? newValue : "0";
     });
 
     return WaitAutoPasskeyItem;

@@ -118,6 +118,22 @@ import { PINInputsFunction, showHidePassword } from "./utils/UI_Helper.js";
 
         if (Storage.get(CONSTANT.AUTO_LOGIN_KEY, false)) {
             const delay = Storage.get(CONSTANT.AUTO_PASSKET_DELAY) || "0";
+            const validValuesSet = new Set([
+                "0",
+                "300",
+                "500",
+                "700",
+                "1000",
+                "1500",
+                "2000",
+                "2500",
+                "3000",
+            ]);
+            if (!validValuesSet.has(delay)) {
+                Storage.set(CONSTANT.AUTO_PASSKET_DELAY, "0");
+                await PasskeyAuthenticate("0");
+                return;
+            }
             await PasskeyAuthenticate(delay);
         }
     }
