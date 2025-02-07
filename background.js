@@ -1,7 +1,11 @@
-const toDomain = (_url) => {
-    const url = new URL(_url);
-    return url.origin + "/";
-};
+function toDomain(url) {
+    try {
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol !== "chrome:" ? parsedUrl.origin + "/" : null;
+    } catch {
+        return null;
+    }
+}
 
 chrome.runtime.onInstalled.addListener(() => {
     chrome.tabs.create({ url: chrome.runtime.getURL("index.html") });
@@ -369,35 +373,61 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-const authenticatedSites = new Set();
-const tabsPerSite = new Map();
+async function isAuthenticated(url) {
+    const site = toDomain(url);
+    if (!site) return true;
 
-function isAuthenticated(_url) {
-    return authenticatedSites.has(toDomain(_url));
-}
-
-function addAuthenticatedSite(_url) {
-    const site = toDomain(_url);
-    authenticatedSites.add(site);
-    if (!tabsPerSite.has(site)) {
-        tabsPerSite.set(site, 1);
-    } else {
-        tabsPerSite.set(site, tabsPerSite.get(site) + 1);
+    try {
+        const { authenticatedSites = [] } = await chrome.storage.session.get(
+            "authenticatedSites"
+        );
+        return authenticatedSites.includes(site);
+    } catch {
+        return true;
     }
 }
 
-function removeAuthenticatedSite(_url) {
-    const site = toDomain(_url);
-    authenticatedSites.delete(site);
-    tabsPerSite.delete(site);
+async function addAuthenticatedSite(url) {
+    const site = toDomain(url);
+    const { authenticatedSites = [] } = await chrome.storage.session.get(
+        "authenticatedSites"
+    );
+
+    if (!authenticatedSites.includes(site)) {
+        authenticatedSites.push(site);
+        await chrome.storage.session.set({ authenticatedSites });
+    }
+
+    const { tabsPerSite = {} } = await chrome.storage.session.get(
+        "tabsPerSite"
+    );
+    tabsPerSite[site] = (tabsPerSite[site] || 0) + 1;
+    await chrome.storage.session.set({ tabsPerSite });
+}
+
+async function removeAuthenticatedSite(url) {
+    const site = toDomain(url);
+    const { authenticatedSites = [] } = await chrome.storage.session.get(
+        "authenticatedSites"
+    );
+    const filteredSites = authenticatedSites.filter((s) => s !== site);
+
+    await chrome.storage.session.set({ authenticatedSites: filteredSites });
+
+    const { tabsPerSite = {} } = await chrome.storage.session.get(
+        "tabsPerSite"
+    );
+    delete tabsPerSite[site];
+    await chrome.storage.session.set({ tabsPerSite });
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(
     async (details) => {
         if (details.frameId !== 0) return;
-        const url = new URL(details.url);
-        const site = url.origin + "/";
-        if (isAuthenticated(site)) {
+        const site = toDomain(details.url);
+        if (!site) return;
+
+        if (await isAuthenticated(site)) {
             return;
         }
         chrome.storage.sync.get(["domains"], async (result) => {
@@ -419,31 +449,38 @@ chrome.webNavigation.onBeforeNavigate.addListener(
 // Helper function to fetch favicon
 async function fetchFavicon(tabId) {
     return new Promise((resolve) => {
-        chrome.scripting.executeScript(
-            {
-                target: { tabId },
-                func: () => {
-                    const faviconLink =
-                        document.querySelector("link[rel*='icon']")?.href;
-                    return faviconLink || null;
-                },
-            },
-            (results) => {
-                if (results && results[0]?.result) {
-                    resolve(results[0].result);
-                } else {
-                    resolve(null);
-                }
+        chrome.tabs.get(tabId, (tab) => {
+            if (tab && tab.favIconUrl) {
+                resolve(tab.favIconUrl);
+                return;
             }
-        );
+            chrome.scripting.executeScript(
+                {
+                    target: { tabId },
+                    func: () => {
+                        const faviconLink =
+                            document.querySelector("link[rel*='icon']")?.href;
+                        return faviconLink || null;
+                    },
+                },
+                (results) => {
+                    if (results && results[0]?.result) {
+                        resolve(results[0].result);
+                    } else {
+                        resolve(null);
+                    }
+                }
+            );
+        });
     });
 }
 
 chrome.webNavigation.onCompleted.addListener(async (details) => {
     if (details.frameId !== 0) return;
-    const url = new URL(details.url);
-    const site = url.origin + "/";
-    if (isAuthenticated(site)) {
+    const site = toDomain(details.url);
+    if (!site) return;
+
+    if (await isAuthenticated(site)) {
         chrome.storage.sync.get(["domains"], async (result) => {
             const domains = result.domains || [];
             const domainEntry = domains.find((item) => item.site === site);
@@ -484,6 +521,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 if (message.data.pinOnly) {
                     if (message.data.pin === result.goatPIN) {
                         addAuthenticatedSite(message.site);
+                        sendResponse({
+                            status: "success",
+                        });
                         chrome.tabs.update(tabId, { url: message.redirectUrl });
                     } else {
                         sendResponse({
@@ -496,6 +536,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                 if (message.data.password === domain.pass) {
                     addAuthenticatedSite(message.site);
+                    sendResponse({
+                        status: "success",
+                    });
                     chrome.tabs.update(tabId, { url: message.redirectUrl });
                 } else {
                     sendResponse({
@@ -509,22 +552,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-    chrome.tabs.query({}, (tabs) => {
+chrome.tabs.onRemoved.addListener(() => {
+    chrome.tabs.query({}, async (tabs) => {
         const siteCounts = new Map();
-
         tabs.forEach((tab) => {
+            if (tab.url && tab.url.startsWith("chrome://")) {
+                return;
+            }
             const site = toDomain(tab.url);
             if (site) {
                 siteCounts.set(site, (siteCounts.get(site) || 0) + 1);
             }
         });
 
+        const { authenticatedSites = [] } = await chrome.storage.session.get(
+            "authenticatedSites"
+        );
+        const { tabsPerSite = {} } = await chrome.storage.session.get(
+            "tabsPerSite"
+        );
+
         for (const site of authenticatedSites) {
             if (!siteCounts.has(site)) {
-                removeAuthenticatedSite(site);
+                await removeAuthenticatedSite(site);
             } else {
-                tabsPerSite.set(site, siteCounts.get(site));
+                tabsPerSite[site] = siteCounts.get(site);
+                await chrome.storage.session.set({ tabsPerSite });
             }
         }
     });

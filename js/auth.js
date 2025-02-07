@@ -88,6 +88,9 @@ import { PINInputsFunction, showHidePassword } from "./utils/UI_Helper.js";
             toast(`Authentication failed: ${result.msg}`, "error");
             return;
         }
+        if (result.status === "success") {
+            toast("Authentication successful!");
+        }
     });
 
     if (isEnabled) {
